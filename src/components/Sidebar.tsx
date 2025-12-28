@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { AccountingPeriod } from '../types';
 import { Icons } from '../constants';
 import { Modal } from './Modal';
@@ -67,6 +67,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
       e.target.value = '';
     }
   };
+
+  // Ordenar períodos do mais novo para o mais velho
+  const sortedPeriods = useMemo(() => {
+    return [...periods].sort((a, b) => {
+      // O nome é no formato "YYYY-MM-DD - YYYY-MM-DD"
+      // Comparar pela data de início em ordem decrescente
+      return b.name.localeCompare(a.name);
+    });
+  }, [periods]);
 
   const handleCreateSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -147,7 +156,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <p className="text-xs text-slate-400 italic">Nenhum período criado.</p>
             </div>
           ) : (
-            periods.map(period => {
+            sortedPeriods.map(period => {
               const isSelected = selectedPeriodId === period.id;
               const isEditing = editingPeriodId === period.id;
               return (
@@ -176,8 +185,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                           onClick={(e) => e.stopPropagation()}
                           autoFocus
                           className={`w-full font-bold text-sm bg-transparent border-b-2 outline-none ${isSelected
-                              ? 'text-white border-white/50 focus:border-white'
-                              : 'text-slate-900 border-indigo-300 focus:border-indigo-500'
+                            ? 'text-white border-white/50 focus:border-white'
+                            : 'text-slate-900 border-indigo-300 focus:border-indigo-500'
                             }`}
                         />
                       ) : (
