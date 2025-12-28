@@ -4,7 +4,7 @@ import { Sidebar } from './components/Sidebar';
 import { PeriodDetails } from './pages/PeriodDetails';
 import { WelcomePage } from './pages/WelcomePage';
 import { TemplatePage } from './pages/TemplatePage';
-import { loadPeriods, loadTransactions, savePeriods, saveTransactions, loadTemplate, saveTemplate } from './libs/storage';
+import { loadPeriods, loadTransactions, savePeriods, saveTransactions, loadTemplate, saveTemplate, exportAllData, importAllData, DatabaseExport } from './libs/storage';
 import { generateId } from './utils';
 
 const App: React.FC = () => {
@@ -246,6 +246,57 @@ const App: React.FC = () => {
     setSelectedPeriodId(null);
   };
 
+  // --- Export/Import Handlers ---
+  const handleExportData = async () => {
+    try {
+      const data = await exportAllData();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `moneyflow-backup-${data.exportedAt.split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Erro ao exportar dados:', error);
+      alert('Erro ao exportar dados. Tente novamente.');
+    }
+  };
+
+  const handleImportData = async (file: File) => {
+    const confirmImport = window.confirm(
+      'ATENÇÃO: Isso substituirá TODOS os dados existentes no sistema. Esta ação não pode ser desfeita. Deseja continuar?'
+    );
+
+    if (!confirmImport) {
+      return;
+    }
+
+    try {
+      const text = await file.text();
+      const data: DatabaseExport = JSON.parse(text);
+      await importAllData(data);
+
+      // Reload all state from storage
+      const savedPeriods = await loadPeriods();
+      const savedTransactions = await loadTransactions();
+      const savedTemplate = await loadTemplate();
+
+      setPeriods(savedPeriods);
+      setTransactions(savedTransactions);
+      setTemplate(savedTemplate);
+      setSelectedPeriodId(savedPeriods.length > 0 ? savedPeriods[0].id : null);
+      setIsTemplateView(false);
+
+      alert('Dados importados com sucesso!');
+    } catch (error) {
+      console.error('Erro ao importar dados:', error);
+      alert('Erro ao importar dados. Verifique se o arquivo é válido.');
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-[#f8fafc] text-slate-900">
       {/* Sidebar - Periods */}
@@ -257,6 +308,8 @@ const App: React.FC = () => {
         onCreatePeriod={handleCreatePeriod}
         onDeletePeriod={deletePeriod}
         onOpenTemplate={handleOpenTemplate}
+        onExportData={handleExportData}
+        onImportData={handleImportData}
       />
 
       {/* Main Content */}

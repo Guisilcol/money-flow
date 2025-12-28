@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { AccountingPeriod } from '../types';
 import { Icons } from '../constants';
 import { Modal } from './Modal';
@@ -12,6 +12,8 @@ interface SidebarProps {
   onCreatePeriod: (period: AccountingPeriod) => void;
   onDeletePeriod: (id: string) => void;
   onOpenTemplate: () => void;
+  onExportData: () => void;
+  onImportData: (file: File) => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -22,8 +24,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onCreatePeriod,
   onDeletePeriod,
   onOpenTemplate,
+  onExportData,
+  onImportData,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      onImportData(file);
+      // Reset input so the same file can be selected again
+      e.target.value = '';
+    }
+  };
 
   const handleCreateSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -53,7 +67,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="bg-indigo-600 p-2.5 rounded-xl text-white shadow-lg shadow-indigo-200">
               <Icons.Wallet />
             </div>
-            <h1 className="text-xl font-black text-slate-900 tracking-tight">FinanceFlow</h1>
+            <h1 className="text-xl font-black text-slate-900 tracking-tight">MoneyFlow</h1>
           </div>
           <button
             onClick={() => setIsModalOpen(true)}
@@ -64,12 +78,37 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <button
             onClick={onOpenTemplate}
             className={`w-full mt-3 flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-all border-2 ${isTemplateView
-                ? 'bg-slate-900 text-white border-slate-900'
-                : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
+              ? 'bg-slate-900 text-white border-slate-900'
+              : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
               }`}
           >
             <Icons.Settings /> Template Padrão
           </button>
+
+          {/* Export/Import buttons */}
+          <div className="flex gap-2 mt-3">
+            <button
+              onClick={onExportData}
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-all border-2 bg-white text-emerald-600 border-emerald-200 hover:border-emerald-400 hover:bg-emerald-50"
+              title="Exportar todos os dados"
+            >
+              <Icons.Download /> Exportar
+            </button>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-all border-2 bg-white text-amber-600 border-amber-200 hover:border-amber-400 hover:bg-amber-50"
+              title="Importar dados de arquivo"
+            >
+              <Icons.Upload /> Importar
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-2 no-scrollbar">
