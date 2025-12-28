@@ -1,5 +1,5 @@
 import { AccountingPeriod, Transaction, Template } from '../types';
-import { getItem, setItem } from './indexeddb';
+import { getItem, setItem } from './indexedDB';
 
 // Storage keys as constants
 const STORAGE_KEYS = {
