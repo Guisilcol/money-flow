@@ -24,14 +24,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const handleCreateSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    const startDate = formData.get('startDate') as string;
+    const endDate = formData.get('endDate') as string;
     const newPeriod: AccountingPeriod = {
       id: generateId(),
-      name: formData.get('name') as string,
-      startDate: formData.get('startDate') as string,
-      endDate: formData.get('endDate') as string,
+      name: `${startDate} - ${endDate}`,
+      startDate,
+      endDate,
       isOpen: true
     };
-    
+
     onCreatePeriod(newPeriod);
     setIsModalOpen(false);
   };
@@ -46,14 +48,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
             <h1 className="text-xl font-black text-slate-900 tracking-tight">FinanceFlow</h1>
           </div>
-          <button 
+          <button
             onClick={() => setIsModalOpen(true)}
             className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-xl font-bold transition-all shadow-lg shadow-indigo-100 active:scale-[0.98]"
           >
             <Icons.Plus /> Novo Período
           </button>
         </div>
-        
+
         <div className="flex-1 overflow-y-auto p-4 space-y-2 no-scrollbar">
           <h2 className="px-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Janelas Contábeis</h2>
           {periods.length === 0 ? (
@@ -64,13 +66,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
             periods.map(period => {
               const isSelected = selectedPeriodId === period.id;
               return (
-                <div 
-                  key={period.id} 
-                  className={`group w-full flex items-center rounded-2xl border transition-all overflow-hidden mb-2 ${
-                    isSelected 
-                    ? 'bg-slate-900 border-slate-900 shadow-xl translate-x-1' 
+                <div
+                  key={period.id}
+                  className={`group w-full flex items-center rounded-2xl border transition-all overflow-hidden mb-2 ${isSelected
+                    ? 'bg-slate-900 border-slate-900 shadow-xl translate-x-1'
                     : 'bg-white border-slate-100 hover:border-indigo-200'
-                  }`}
+                    }`}
                 >
                   <button
                     onClick={() => onSelectPeriod(period.id)}
@@ -86,19 +87,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       </div>
                     </div>
                   </button>
-                  
-                  <button 
+
+                  <button
                     type="button"
-                    onClick={(e) => { 
+                    onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      onDeletePeriod(period.id); 
+                      onDeletePeriod(period.id);
                     }}
-                    className={`h-full p-4 shrink-0 transition-colors cursor-pointer flex items-center justify-center ${
-                      isSelected 
-                      ? 'text-slate-500 hover:text-rose-400 hover:bg-white/10' 
+                    className={`h-full p-4 shrink-0 transition-colors cursor-pointer flex items-center justify-center ${isSelected
+                      ? 'text-slate-500 hover:text-rose-400 hover:bg-white/10'
                       : 'text-slate-300 hover:text-rose-600 hover:bg-rose-50'
-                    }`}
+                      }`}
                     title="Excluir período"
                     aria-label="Excluir período"
                   >
@@ -113,29 +113,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </aside>
 
-      <Modal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
         title="Novo Período Contábil"
       >
         <form onSubmit={handleCreateSubmit} className="space-y-6">
-          <div>
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Nome do Período</label>
-            <input name="name" required placeholder="Ex: Outubro 2024" className="w-full p-4 bg-slate-50 border-slate-200 border-2 rounded-2xl focus:border-indigo-500 outline-none transition-all font-bold" />
-          </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Início</label>
               <div className="relative group">
-                <input 
-                  name="startDate" 
-                  type="date" 
-                  required 
+                <input
+                  name="startDate"
+                  type="date"
+                  required
                   defaultValue={getFirstDayOfMonth()}
                   onClick={(e) => (e.target as HTMLInputElement).showPicker?.()}
-                  className="w-full p-4 bg-slate-50 border-slate-200 border-2 rounded-2xl focus:border-indigo-500 outline-none transition-all font-bold cursor-pointer" 
+                  className="w-full p-4 bg-slate-50 border-slate-200 border-2 rounded-2xl focus:border-indigo-500 outline-none transition-all font-bold cursor-pointer"
                 />
-                 <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none group-hover:text-indigo-500 transition-colors">
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none group-hover:text-indigo-500 transition-colors">
                   <Icons.Calendar />
                 </div>
               </div>
@@ -143,13 +139,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div>
               <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Fim</label>
               <div className="relative group">
-                <input 
-                  name="endDate" 
-                  type="date" 
-                  required 
+                <input
+                  name="endDate"
+                  type="date"
+                  required
                   defaultValue={getLastDayOfMonth()}
                   onClick={(e) => (e.target as HTMLInputElement).showPicker?.()}
-                  className="w-full p-4 bg-slate-50 border-slate-200 border-2 rounded-2xl focus:border-indigo-500 outline-none transition-all font-bold cursor-pointer" 
+                  className="w-full p-4 bg-slate-50 border-slate-200 border-2 rounded-2xl focus:border-indigo-500 outline-none transition-all font-bold cursor-pointer"
                 />
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none group-hover:text-indigo-500 transition-colors">
                   <Icons.Calendar />
