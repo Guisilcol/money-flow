@@ -3,12 +3,9 @@ import { AccountingPeriod, Transaction, TransactionType, PeriodSummary } from '.
 import { Icons } from '../constants';
 import { Modal } from '../components/Modal';
 import { StatCard } from '../components/StatCard';
-import { TabNavigation } from '../components/TabNavigation';
 import { PageHeader } from '../components/PageHeader';
-import { CategoryChart } from '../components/CategoryChart';
-import { FinancialHealthCard } from '../components/FinancialHealthCard';
-import { TransactionTable } from '../components/TransactionTable';
 import { TransactionForm } from '../components/TransactionForm';
+import { TabbedTransactionTable } from '../components/TabbedTransactionTable';
 
 interface PeriodDetailsProps {
   period: AccountingPeriod;
@@ -18,15 +15,6 @@ interface PeriodDetailsProps {
   onUpdatePeriod: (period: AccountingPeriod) => void;
 }
 
-type TabId = 'overview' | 'fixed' | 'variable' | 'entries';
-
-const TABS = [
-  { id: 'overview', label: 'Visão Geral' },
-  { id: 'entries', label: 'Minhas Entradas' },
-  { id: 'fixed', label: 'Gastos Fixos' },
-  { id: 'variable', label: 'Gastos Variáveis' }
-];
-
 export const PeriodDetails: React.FC<PeriodDetailsProps> = ({
   period,
   transactions,
@@ -34,7 +22,6 @@ export const PeriodDetails: React.FC<PeriodDetailsProps> = ({
   onDeleteTransaction,
   onUpdatePeriod
 }) => {
-  const [activeTab, setActiveTab] = useState<TabId>('overview');
   const [isAddingTransaction, setIsAddingTransaction] = useState(false);
 
   // --- Derived State ---
@@ -64,14 +51,6 @@ export const PeriodDetails: React.FC<PeriodDetailsProps> = ({
     };
   }, [transactions, period.investmentPercentage]);
 
-  const filteredTransactions = transactions
-    .filter(t => {
-      if (activeTab === 'entries') return t.type === TransactionType.ENTRY;
-      if (activeTab === 'fixed') return t.type === TransactionType.EXPENSE && t.isFixed;
-      return t.type === TransactionType.EXPENSE && !t.isFixed;
-    })
-    .sort((a, b) => b.date.localeCompare(a.date));
-
   const chartData = transactions.reduce((acc: { name: string; value: number; type: TransactionType }[], curr) => {
     const found = acc.find(a => a.name === curr.category);
     if (found) found.value += curr.amount;
@@ -82,12 +61,6 @@ export const PeriodDetails: React.FC<PeriodDetailsProps> = ({
   const handleAddTransaction = (transaction: Transaction) => {
     onAddTransaction(transaction);
     setIsAddingTransaction(false);
-  };
-
-  const getButtonLabel = () => {
-    if (activeTab === 'fixed') return 'Lançar Conta Fixa';
-    if (activeTab === 'entries') return 'Lançar Entrada';
-    return 'Adicionar Lançamento';
   };
 
   return (
@@ -103,7 +76,7 @@ export const PeriodDetails: React.FC<PeriodDetailsProps> = ({
             onClick={() => setIsAddingTransaction(true)}
             className="bg-slate-900 hover:bg-black text-white px-8 py-4 rounded-[1.25rem] font-bold flex items-center gap-2 shadow-2xl shadow-slate-200 transition-all hover:-translate-y-1 active:scale-95"
           >
-            <Icons.Plus /> {getButtonLabel()}
+            <Icons.Plus /> Adicionar Lançamento
           </button>
         }
       />
@@ -178,41 +151,22 @@ export const PeriodDetails: React.FC<PeriodDetailsProps> = ({
         />
       </div>
 
-      {/* Tabs & Content */}
-      <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
-        <TabNavigation
-          tabs={TABS}
-          activeTab={activeTab}
-          onTabChange={(id) => setActiveTab(id as TabId)}
-        />
-
-        <div className="p-8">
-          {activeTab === 'overview' && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-              <CategoryChart data={chartData} />
-              <div className="space-y-6">
-                <FinancialHealthCard summary={summary} />
-              </div>
-            </div>
-          )}
-
-          {activeTab !== 'overview' && (
-            <TransactionTable
-              transactions={filteredTransactions}
-              onDeleteTransaction={onDeleteTransaction}
-            />
-          )}
-        </div>
-      </div>
+      {/* Tabbed Transaction Table */}
+      <TabbedTransactionTable
+        transactions={transactions}
+        onDeleteTransaction={onDeleteTransaction}
+        summary={summary}
+        chartData={chartData}
+      />
 
       <Modal
         isOpen={isAddingTransaction}
         onClose={() => setIsAddingTransaction(false)}
-        title={activeTab === 'fixed' ? 'Nova Conta Fixa' : "Novo Lançamento"}
+        title="Novo Lançamento"
       >
         <TransactionForm
           periodId={period.id}
-          activeTab={activeTab}
+          activeTab="variable"
           onSubmit={handleAddTransaction}
           onCancel={() => setIsAddingTransaction(false)}
         />
