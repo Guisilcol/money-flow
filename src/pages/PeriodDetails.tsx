@@ -119,12 +119,6 @@ export const PeriodDetails: React.FC<PeriodDetailsProps> = ({
           colorClass="bg-amber-50 text-amber-600"
           subText={`Variáveis: R$ ${summary.variableExpenses.toFixed(2)}`}
         />
-        <StatCard
-          title="Saldo Final"
-          amount={summary.balance}
-          icon={Icons.Wallet}
-          colorClass={summary.balance >= 0 ? "bg-indigo-50 text-indigo-600" : "bg-rose-100 text-rose-700"}
-        />
       </div>
 
       {/* Tabs & Content */}
