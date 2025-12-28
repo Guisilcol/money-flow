@@ -9,7 +9,7 @@ import {
   DeleteTransactionHandler,
   UpdatePeriodHandler
 } from '../types';
-import { Icons, CATEGORY_LABELS } from '../constants';
+import { Icons } from '../constants';
 import { Modal } from '../components/Modal';
 import { StatCard } from '../components/StatCard';
 import { PageHeader } from '../components/PageHeader';
