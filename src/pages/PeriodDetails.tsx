@@ -2,15 +2,16 @@ import React, { useState, useMemo } from 'react';
 import {
   AccountingPeriod,
   Transaction,
-  TransactionType,
-  TransactionCategory,
   PeriodSummary,
   AddTransactionHandler,
   DeleteTransactionHandler,
   UpdatePeriodHandler,
   FixedExpense,
   AddFixedExpenseHandler,
-  DeleteFixedExpenseHandler
+  DeleteFixedExpenseHandler,
+  Entry,
+  AddEntryHandler,
+  DeleteEntryHandler
 } from '../types';
 import { Icons } from '../constants';
 import { Modal } from '../components/Modal';
@@ -19,6 +20,7 @@ import { PageHeader } from '../components/PageHeader';
 import { TransactionForm } from '../components/TransactionForm';
 import { TabbedTransactionTable } from '../components/TabbedTransactionTable';
 import { FixedExpenseCard } from '../components/FixedExpenseCard';
+import { EntryCard } from '../components/EntryCard';
 
 interface PeriodDetailsProps {
   period: AccountingPeriod;
@@ -28,6 +30,8 @@ interface PeriodDetailsProps {
   onUpdatePeriod: UpdatePeriodHandler;
   onAddFixedExpense: AddFixedExpenseHandler;
   onDeleteFixedExpense: DeleteFixedExpenseHandler;
+  onAddEntry: AddEntryHandler;
+  onDeleteEntry: DeleteEntryHandler;
 }
 
 export const PeriodDetails: React.FC<PeriodDetailsProps> = ({
@@ -37,20 +41,20 @@ export const PeriodDetails: React.FC<PeriodDetailsProps> = ({
   onDeleteTransaction,
   onUpdatePeriod,
   onAddFixedExpense,
-  onDeleteFixedExpense
+  onDeleteFixedExpense,
+  onAddEntry,
+  onDeleteEntry
 }) => {
   const [isAddingTransaction, setIsAddingTransaction] = useState(false);
 
   // --- Derived State ---
   const summary = useMemo((): PeriodSummary => {
-    const entries = transactions.filter(t => t.type === TransactionType.ENTRY);
-    const expenses = transactions.filter(t => t.type === TransactionType.EXPENSE);
-
-    const totalEntries = entries.reduce((acc, curr) => acc + curr.amount, 0);
-    const variableExpenses = expenses.reduce((acc, curr) => acc + curr.amount, 0);
-
-    // Gastos fixos agora vêm do período, não das transações
+    // Entradas e gastos fixos agora vêm do período, não das transações
+    const totalEntries = (period.entries || []).reduce((acc, curr) => acc + curr.amount, 0);
     const fixedExpenses = (period.fixedExpenses || []).reduce((acc, curr) => acc + curr.amount, 0);
+
+    // Transações agora são apenas gastos variáveis
+    const variableExpenses = transactions.reduce((acc, curr) => acc + curr.amount, 0);
     const totalExpenses = variableExpenses + fixedExpenses;
 
     // Cálculos
@@ -68,14 +72,7 @@ export const PeriodDetails: React.FC<PeriodDetailsProps> = ({
       projectedVariableBalance,
       currentVariableBalance
     };
-  }, [transactions, period.investmentPercentage, period.fixedExpenses]);
-
-  const chartData = transactions.reduce((acc: { name: TransactionCategory; value: number }[], curr) => {
-    const found = acc.find(a => a.name === curr.category);
-    if (found) found.value += curr.amount;
-    else acc.push({ name: curr.category, value: curr.amount });
-    return acc;
-  }, []);
+  }, [transactions, period.investmentPercentage, period.fixedExpenses, period.entries]);
 
   const handleAddTransaction = (transaction: Transaction) => {
     onAddTransaction(transaction);
@@ -95,9 +92,25 @@ export const PeriodDetails: React.FC<PeriodDetailsProps> = ({
             onClick={() => setIsAddingTransaction(true)}
             className="bg-slate-900 hover:bg-black text-white px-8 py-4 rounded-[1.25rem] font-bold flex items-center gap-2 shadow-2xl shadow-slate-200 transition-all hover:-translate-y-1 active:scale-95"
           >
-            <Icons.Plus /> Adicionar Lançamento
+            <Icons.Plus /> Gasto Variável
           </button>
         }
+      />
+
+      {/* Entry Card - Entradas do período */}
+      <EntryCard
+        periodId={period.id}
+        entries={period.entries || []}
+        onAddEntry={onAddEntry}
+        onDeleteEntry={onDeleteEntry}
+      />
+
+      {/* Fixed Expenses Card */}
+      <FixedExpenseCard
+        periodId={period.id}
+        fixedExpenses={period.fixedExpenses || []}
+        onAddFixedExpense={onAddFixedExpense}
+        onDeleteFixedExpense={onDeleteFixedExpense}
       />
 
       {/* Investment Percentage Input */}
@@ -170,26 +183,17 @@ export const PeriodDetails: React.FC<PeriodDetailsProps> = ({
         />
       </div>
 
-      {/* Fixed Expenses Card */}
-      <FixedExpenseCard
-        periodId={period.id}
-        fixedExpenses={period.fixedExpenses || []}
-        onAddFixedExpense={onAddFixedExpense}
-        onDeleteFixedExpense={onDeleteFixedExpense}
-      />
-
-      {/* Tabbed Transaction Table */}
+      {/* Tabbed Transaction Table - Apenas Gastos Variáveis */}
       <TabbedTransactionTable
         transactions={transactions}
         onDeleteTransaction={onDeleteTransaction}
         summary={summary}
-        chartData={chartData}
       />
 
       <Modal
         isOpen={isAddingTransaction}
         onClose={() => setIsAddingTransaction(false)}
-        title="Novo Lançamento"
+        title="Novo Gasto Variável"
       >
         <TransactionForm
           periodId={period.id}

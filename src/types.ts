@@ -1,14 +1,13 @@
 
 export enum TransactionType {
-  ENTRY = 'ENTRY',
   EXPENSE = 'EXPENSE'
 }
 
 export enum TransactionCategory {
-  VARIABLE_EXPENSE = 'VARIABLE_EXPENSE',
-  ENTRY = 'ENTRY'
+  VARIABLE_EXPENSE = 'VARIABLE_EXPENSE'
 }
 
+// Transações são apenas gastos variáveis (com data)
 export interface Transaction {
   id: string;
   periodId: string;
@@ -27,6 +26,14 @@ export interface FixedExpense {
   amount: number;
 }
 
+// Entradas - valores nomeados vinculados ao período, sem data
+export interface Entry {
+  id: string;
+  periodId: string;
+  name: string;
+  amount: number;
+}
+
 export interface AccountingPeriod {
   id: string;
   name: string;
@@ -35,6 +42,7 @@ export interface AccountingPeriod {
   isOpen: boolean;
   investmentPercentage: number;
   fixedExpenses: FixedExpense[];
+  entries: Entry[];
 }
 
 export interface PeriodSummary {
@@ -54,3 +62,5 @@ export type DeleteTransactionHandler = (id: string) => void;
 export type UpdatePeriodHandler = (period: AccountingPeriod) => void;
 export type AddFixedExpenseHandler = (expense: FixedExpense) => void;
 export type DeleteFixedExpenseHandler = (expenseId: string) => void;
+export type AddEntryHandler = (entry: Entry) => void;
+export type DeleteEntryHandler = (entryId: string) => void;

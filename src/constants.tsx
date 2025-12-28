@@ -3,8 +3,7 @@ import React from 'react';
 import { TransactionCategory } from './types';
 
 export const CATEGORY_LABELS: Record<TransactionCategory, string> = {
-  [TransactionCategory.VARIABLE_EXPENSE]: 'Gasto Variável',
-  [TransactionCategory.ENTRY]: 'Entrada'
+  [TransactionCategory.VARIABLE_EXPENSE]: 'Gasto Variável'
 };
 
 export const Icons = {

@@ -2,14 +2,16 @@ import { AccountingPeriod, Transaction } from '../types';
 
 // Storage keys as constants
 const STORAGE_KEYS = {
-  PERIODS: 'finance_periods_v3',
-  TRANSACTIONS: 'finance_transactions_v3',
+  PERIODS: 'finance_periods_v4',
+  TRANSACTIONS: 'finance_transactions_v4',
 } as const;
 
 // Legacy keys for migration
 const LEGACY_KEYS = {
-  PERIODS: 'finance_periods_v2',
-  TRANSACTIONS: 'finance_transactions_v2',
+  PERIODS_V3: 'finance_periods_v3',
+  TRANSACTIONS_V3: 'finance_transactions_v3',
+  PERIODS_V2: 'finance_periods_v2',
+  TRANSACTIONS_V2: 'finance_transactions_v2',
 } as const;
 
 // Generic functions
@@ -33,7 +35,7 @@ function setItem<T>(key: string, value: T): void {
 
 // Migration function to convert old data format
 function migrateData(): { periods: AccountingPeriod[]; transactions: Transaction[] } {
-  // Check if we already have v3 data
+  // Check if we already have v4 data
   const existingPeriods = getItem<AccountingPeriod[]>(STORAGE_KEYS.PERIODS);
   const existingTransactions = getItem<Transaction[]>(STORAGE_KEYS.TRANSACTIONS);
 
@@ -41,25 +43,37 @@ function migrateData(): { periods: AccountingPeriod[]; transactions: Transaction
     return { periods: existingPeriods, transactions: existingTransactions };
   }
 
-  // Load legacy v2 data
-  const legacyPeriods = getItem<any[]>(LEGACY_KEYS.PERIODS) ?? [];
-  const legacyTransactions = getItem<any[]>(LEGACY_KEYS.TRANSACTIONS) ?? [];
+  // Try to load v3 data first, then v2
+  let legacyPeriods = getItem<any[]>(LEGACY_KEYS.PERIODS_V3);
+  let legacyTransactions = getItem<any[]>(LEGACY_KEYS.TRANSACTIONS_V3);
 
-  // Migrate periods - add fixedExpenses array if not present
+  if (legacyPeriods === null) {
+    legacyPeriods = getItem<any[]>(LEGACY_KEYS.PERIODS_V2) ?? [];
+    legacyTransactions = getItem<any[]>(LEGACY_KEYS.TRANSACTIONS_V2) ?? [];
+  }
+
+  legacyPeriods = legacyPeriods ?? [];
+  legacyTransactions = legacyTransactions ?? [];
+
+  // Migrate periods - add entries array if not present
   const migratedPeriods: AccountingPeriod[] = legacyPeriods.map(period => ({
     ...period,
-    fixedExpenses: period.fixedExpenses ?? []
+    fixedExpenses: period.fixedExpenses ?? [],
+    entries: period.entries ?? []
   }));
 
-  // Filter out old FIXED_EXPENSE transactions and convert them to fixedExpenses
+  // Filter out old FIXED_EXPENSE and ENTRY transactions and convert them
   const fixedExpenseTransactions = legacyTransactions.filter(
     (t: any) => t.category === 'FIXED_EXPENSE'
+  );
+  const entryTransactions = legacyTransactions.filter(
+    (t: any) => t.category === 'ENTRY' || t.type === 'ENTRY'
   );
 
   // Add fixed expenses from transactions to their respective periods
   fixedExpenseTransactions.forEach((t: any) => {
     const period = migratedPeriods.find(p => p.id === t.periodId);
-    if (period) {
+    if (period && !period.fixedExpenses.some(e => e.id === t.id)) {
       period.fixedExpenses.push({
         id: t.id,
         periodId: t.periodId,
@@ -69,12 +83,26 @@ function migrateData(): { periods: AccountingPeriod[]; transactions: Transaction
     }
   });
 
-  // Filter out FIXED_EXPENSE from transactions
+  // Add entries from transactions to their respective periods
+  entryTransactions.forEach((t: any) => {
+    const period = migratedPeriods.find(p => p.id === t.periodId);
+    if (period && !period.entries.some(e => e.id === t.id)) {
+      period.entries.push({
+        id: t.id,
+        periodId: t.periodId,
+        name: t.description,
+        amount: t.amount
+      });
+    }
+  });
+
+  // Filter out FIXED_EXPENSE and ENTRY from transactions - only keep VARIABLE_EXPENSE
   const migratedTransactions: Transaction[] = legacyTransactions
-    .filter((t: any) => t.category !== 'FIXED_EXPENSE')
+    .filter((t: any) => t.category !== 'FIXED_EXPENSE' && t.category !== 'ENTRY' && t.type !== 'ENTRY')
     .map((t: any) => ({
       ...t,
-      category: t.category === 'ENTRY' ? 'ENTRY' : 'VARIABLE_EXPENSE'
+      type: 'EXPENSE',
+      category: 'VARIABLE_EXPENSE'
     }));
 
   // Save migrated data

@@ -1,28 +1,25 @@
 import React, { useState, useMemo } from 'react';
-import { Transaction, TransactionType, TransactionCategory, PeriodSummary } from '../types';
-import { Icons, CATEGORY_LABELS } from '../constants';
-import { CategoryChart } from './CategoryChart';
+import { Transaction, PeriodSummary } from '../types';
+import { Icons } from '../constants';
 import { FinancialHealthCard } from './FinancialHealthCard';
 
 interface TabbedTransactionTableProps {
     transactions: Transaction[];
     onDeleteTransaction: (id: string) => void;
     summary: PeriodSummary;
-    chartData: { name: TransactionCategory; value: number }[];
 }
 
 type InternalTabId = 'overview' | 'transactions';
 
 const INTERNAL_TABS = [
     { id: 'overview', label: 'Visão Geral', icon: Icons.TrendingUp },
-    { id: 'transactions', label: 'Lançamentos', icon: Icons.Calendar }
+    { id: 'transactions', label: 'Gastos Variáveis', icon: Icons.Calendar }
 ];
 
 export const TabbedTransactionTable: React.FC<TabbedTransactionTableProps> = ({
     transactions,
     onDeleteTransaction,
-    summary,
-    chartData
+    summary
 }) => {
     const [activeTab, setActiveTab] = useState<InternalTabId>('overview');
 
@@ -31,12 +28,8 @@ export const TabbedTransactionTable: React.FC<TabbedTransactionTableProps> = ({
     const [filterMinValue, setFilterMinValue] = useState('');
     const [filterMaxValue, setFilterMaxValue] = useState('');
     const [filterName, setFilterName] = useState('');
-    const [filterCategory, setFilterCategory] = useState<TransactionCategory | ''>('');
 
-    // Get categories for the dropdown (only 2 now: VARIABLE_EXPENSE and ENTRY)
-    const categories = Object.values(TransactionCategory);
-
-    // Filtered and sorted transactions
+    // Filtered and sorted transactions (all are variable expenses now)
     const filteredTransactions = useMemo(() => {
         return transactions
             .filter(t => {
@@ -50,28 +43,21 @@ export const TabbedTransactionTable: React.FC<TabbedTransactionTableProps> = ({
                 // Name filter (description)
                 if (filterName && !t.description.toLowerCase().includes(filterName.toLowerCase())) return false;
 
-                // Category filter
-                if (filterCategory && t.category !== filterCategory) return false;
-
                 return true;
             })
             .sort((a, b) => b.date.localeCompare(a.date));
-    }, [transactions, filterDate, filterMinValue, filterMaxValue, filterName, filterCategory]);
+    }, [transactions, filterDate, filterMinValue, filterMaxValue, filterName]);
 
     const clearFilters = () => {
         setFilterDate('');
         setFilterMinValue('');
         setFilterMaxValue('');
         setFilterName('');
-        setFilterCategory('');
     };
 
-    const hasActiveFilters = filterDate || filterMinValue || filterMaxValue || filterName || filterCategory;
+    const hasActiveFilters = filterDate || filterMinValue || filterMaxValue || filterName;
 
-    const total = filteredTransactions.reduce((acc, t) => {
-        if (t.type === TransactionType.ENTRY) return acc + t.amount;
-        return acc - t.amount;
-    }, 0);
+    const total = filteredTransactions.reduce((acc, t) => acc + t.amount, 0);
 
     return (
         <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
@@ -101,9 +87,8 @@ export const TabbedTransactionTable: React.FC<TabbedTransactionTableProps> = ({
 
             <div className="p-8">
                 {activeTab === 'overview' && (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-                        <CategoryChart data={chartData} />
-                        <div className="space-y-6">
+                    <div className="flex justify-center">
+                        <div className="w-full max-w-md">
                             <FinancialHealthCard summary={summary} />
                         </div>
                     </div>
@@ -129,7 +114,7 @@ export const TabbedTransactionTable: React.FC<TabbedTransactionTableProps> = ({
                                 )}
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                 {/* Date Filter */}
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold text-slate-500">Data</label>
@@ -180,33 +165,17 @@ export const TabbedTransactionTable: React.FC<TabbedTransactionTableProps> = ({
                                         className="w-full px-3 py-2.5 text-sm font-medium bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                                     />
                                 </div>
-
-                                {/* Category Filter */}
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-slate-500">Categoria</label>
-                                    <select
-                                        value={filterCategory}
-                                        onChange={(e) => setFilterCategory(e.target.value as TransactionCategory | '')}
-                                        className="w-full px-3 py-2.5 text-sm font-medium bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                                    >
-                                        <option value="">Todas</option>
-                                        {categories.map(cat => (
-                                            <option key={cat} value={cat}>{CATEGORY_LABELS[cat]}</option>
-                                        ))}
-                                    </select>
-                                </div>
                             </div>
                         </div>
 
                         {/* Table Header */}
                         <div className="flex justify-between items-end border-b border-slate-100 pb-4">
                             <h4 className="text-xl font-black text-slate-900">
-                                Lançamentos (Entradas e Gastos Variáveis)
+                                Gastos Variáveis
                             </h4>
                             <div className="text-xs font-black text-slate-400 uppercase tracking-widest">
-                                Saldo: <span className={`ml-1 ${total >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                                    R$ {Math.abs(total).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                                    {total < 0 && ' (negativo)'}
+                                Total: <span className="ml-1 text-rose-600">
+                                    - R$ {total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                                 </span>
                             </div>
                         </div>
@@ -216,7 +185,6 @@ export const TabbedTransactionTable: React.FC<TabbedTransactionTableProps> = ({
                             <table className="w-full">
                                 <thead>
                                     <tr className="text-left text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">
-                                        <th className="pb-4 px-3">Categoria</th>
                                         <th className="pb-4 px-3">Data</th>
                                         <th className="pb-4 px-3">Descrição</th>
                                         <th className="pb-4 px-3 text-right">Valor</th>
@@ -226,21 +194,12 @@ export const TabbedTransactionTable: React.FC<TabbedTransactionTableProps> = ({
                                 <tbody className="divide-y divide-slate-50">
                                     {filteredTransactions.map(t => (
                                         <tr key={t.id} className="group hover:bg-slate-50/80 transition-all">
-                                            <td className="py-5 px-3">
-                                                <span className={`text-[9px] font-black px-3 py-1.5 rounded-full uppercase tracking-tighter ${t.category === TransactionCategory.ENTRY
-                                                    ? 'bg-emerald-100 text-emerald-600'
-                                                    : 'bg-rose-100 text-rose-600'
-                                                    }`}>
-                                                    {CATEGORY_LABELS[t.category]}
-                                                </span>
-                                            </td>
                                             <td className="py-5 px-3 text-xs font-mono font-bold text-slate-400">
                                                 {t.date.split('-').reverse().join('/')}
                                             </td>
                                             <td className="py-5 px-3 font-bold text-slate-900">{t.description}</td>
-
-                                            <td className={`py-5 px-3 text-right font-black ${t.type === TransactionType.ENTRY ? 'text-emerald-600' : 'text-slate-900'}`}>
-                                                {t.type === TransactionType.ENTRY ? '+' : '-'} R$ {t.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                            <td className="py-5 px-3 text-right font-black text-slate-900">
+                                                - R$ {t.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                                             </td>
                                             <td className="py-5 px-3 text-right w-10">
                                                 <button
@@ -254,10 +213,10 @@ export const TabbedTransactionTable: React.FC<TabbedTransactionTableProps> = ({
                                     ))}
                                     {filteredTransactions.length === 0 && (
                                         <tr>
-                                            <td colSpan={5} className="py-20 text-center text-slate-300 font-bold italic">
+                                            <td colSpan={4} className="py-20 text-center text-slate-300 font-bold italic">
                                                 {hasActiveFilters
-                                                    ? 'Nenhum lançamento encontrado com os filtros aplicados.'
-                                                    : 'Nenhum lançamento encontrado neste período.'}
+                                                    ? 'Nenhum gasto encontrado com os filtros aplicados.'
+                                                    : 'Nenhum gasto variável registrado neste período.'}
                                             </td>
                                         </tr>
                                     )}
@@ -268,7 +227,7 @@ export const TabbedTransactionTable: React.FC<TabbedTransactionTableProps> = ({
                         {/* Results count */}
                         {filteredTransactions.length > 0 && (
                             <div className="text-xs text-slate-400 text-right">
-                                Exibindo {filteredTransactions.length} de {transactions.length} lançamentos
+                                Exibindo {filteredTransactions.length} de {transactions.length} gastos
                             </div>
                         )}
                     </div>

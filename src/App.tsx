@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Transaction, AccountingPeriod, FixedExpense } from './types';
+import { Transaction, AccountingPeriod, FixedExpense, Entry } from './types';
 import { Sidebar } from './components/Sidebar';
 import { PeriodDetails } from './pages/PeriodDetails';
 import { WelcomePage } from './pages/WelcomePage';
@@ -39,13 +39,14 @@ const App: React.FC = () => {
 
   // --- Handlers ---
   const handleCreatePeriod = (newPeriod: AccountingPeriod) => {
-    // Ensure fixedExpenses is initialized
-    const periodWithFixedExpenses = {
+    // Ensure fixedExpenses and entries are initialized
+    const periodWithDefaults = {
       ...newPeriod,
-      fixedExpenses: newPeriod.fixedExpenses || []
+      fixedExpenses: newPeriod.fixedExpenses || [],
+      entries: newPeriod.entries || []
     };
-    setPeriods(prev => [periodWithFixedExpenses, ...prev]);
-    setSelectedPeriodId(periodWithFixedExpenses.id);
+    setPeriods(prev => [periodWithDefaults, ...prev]);
+    setSelectedPeriodId(periodWithDefaults.id);
   };
 
   const handleAddTransaction = (newTransaction: Transaction) => {
@@ -101,6 +102,31 @@ const App: React.FC = () => {
     }));
   };
 
+  // --- Entry Handlers ---
+  const handleAddEntry = (entry: Entry) => {
+    setPeriods(prev => prev.map(p => {
+      if (p.id === entry.periodId) {
+        return {
+          ...p,
+          entries: [...(p.entries || []), entry]
+        };
+      }
+      return p;
+    }));
+  };
+
+  const handleDeleteEntry = (entryId: string) => {
+    setPeriods(prev => prev.map(p => {
+      if (p.id === selectedPeriodId) {
+        return {
+          ...p,
+          entries: (p.entries || []).filter(e => e.id !== entryId)
+        };
+      }
+      return p;
+    }));
+  };
+
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-[#f8fafc] text-slate-900">
       {/* Sidebar - Periods */}
@@ -125,6 +151,8 @@ const App: React.FC = () => {
             onUpdatePeriod={handleUpdatePeriod}
             onAddFixedExpense={handleAddFixedExpense}
             onDeleteFixedExpense={handleDeleteFixedExpense}
+            onAddEntry={handleAddEntry}
+            onDeleteEntry={handleDeleteEntry}
           />
         )}
       </main>
