@@ -1,19 +1,19 @@
 import { Transaction } from '../types';
 
 /**
- * Retorna as datas que tem lançamentos "ZERO GASTOS"
+ * Retorna as datas que têm qualquer transação (dia "usado/fechado")
  */
-export function getZeroDays(transactions: Transaction[]): Set<string> {
-  return new Set(
-    transactions
-      .filter(t => t.description === 'ZERO GASTOS' && t.amount === 0)
-      .map(t => t.date)
-  );
+export function getDaysWithTransactions(transactions: Transaction[]): Set<string> {
+  return new Set(transactions.map(t => t.date));
 }
 
 /**
  * Calcula o gasto diário sugerido baseado no saldo variável disponível
- * e nos dias restantes do período, excluindo dias "zerados".
+ * e nos dias restantes do período que ainda não têm transações.
+ * 
+ * Lógica: quando você faz uma transação em um dia (qualquer valor),
+ * esse dia é considerado "fechado" e o saldo restante é redistribuído
+ * entre os dias sem transações.
  */
 export function calculateDailyBudget(
   currentVariableBalance: number,
@@ -27,36 +27,29 @@ export function calculateDailyBudget(
   // Se o período já acabou, retorna 0
   if (today > end) return 0;
   
-  // Calcula dias restantes (incluindo hoje)
-  const diffTime = end.getTime() - today.getTime();
-  const totalRemainingDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+  // Dias que já têm transações (considerados "fechados")
+  const usedDays = getDaysWithTransactions(transactions);
   
-  if (totalRemainingDays <= 0) return 0;
-  
-  // Conta quantos dias "zerados" estão nos dias restantes (hoje até o fim)
-  const zeroDays = getZeroDays(transactions);
-  let zeroDaysInRemaining = 0;
+  // Conta dias restantes SEM transações (de hoje até o fim do período)
+  let daysWithoutTransactions = 0;
   
   const current = new Date(today);
   while (current <= end) {
     const dateStr = current.toISOString().split('T')[0];
-    if (zeroDays.has(dateStr)) {
-      zeroDaysInRemaining++;
+    if (!usedDays.has(dateStr)) {
+      daysWithoutTransactions++;
     }
     current.setDate(current.getDate() + 1);
   }
   
-  // Dias efetivos = dias restantes - dias zerados
-  const effectiveRemainingDays = totalRemainingDays - zeroDaysInRemaining;
+  // Se todos os dias já têm transações, não há mais dias para gastar
+  if (daysWithoutTransactions <= 0) return 0;
   
-  if (effectiveRemainingDays <= 0) return 0;
-  
-  return currentVariableBalance / effectiveRemainingDays;
+  return currentVariableBalance / daysWithoutTransactions;
 }
 
 /**
- * Retorna o número de dias restantes no período (incluindo hoje),
- * excluindo dias com "ZERO GASTOS".
+ * Retorna o número de dias restantes no período que ainda não têm transações.
  */
 export function getRemainingDays(
   endDate: string,
@@ -68,23 +61,22 @@ export function getRemainingDays(
   
   if (today > end) return 0;
   
-  const diffTime = end.getTime() - today.getTime();
-  const totalRemainingDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+  // Dias que já têm transações
+  const usedDays = getDaysWithTransactions(transactions);
   
-  // Conta dias zerados nos dias restantes
-  const zeroDays = getZeroDays(transactions);
-  let zeroDaysInRemaining = 0;
+  // Conta dias restantes SEM transações
+  let daysWithoutTransactions = 0;
   
   const current = new Date(today);
   while (current <= end) {
     const dateStr = current.toISOString().split('T')[0];
-    if (zeroDays.has(dateStr)) {
-      zeroDaysInRemaining++;
+    if (!usedDays.has(dateStr)) {
+      daysWithoutTransactions++;
     }
     current.setDate(current.getDate() + 1);
   }
   
-  return totalRemainingDays - zeroDaysInRemaining;
+  return daysWithoutTransactions;
 }
 
 /**
