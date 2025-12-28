@@ -5,13 +5,14 @@ import {
   PeriodSummary,
   AddTransactionHandler,
   DeleteTransactionHandler,
+  UpdateTransactionHandler,
   UpdatePeriodHandler,
-  FixedExpense,
   AddFixedExpenseHandler,
   DeleteFixedExpenseHandler,
-  Entry,
+  UpdateFixedExpenseHandler,
   AddEntryHandler,
-  DeleteEntryHandler
+  DeleteEntryHandler,
+  UpdateEntryHandler
 } from '../types';
 import { Icons } from '../constants';
 import { Modal } from '../components/Modal';
@@ -19,19 +20,21 @@ import { StatCard } from '../components/StatCard';
 import { PageHeader } from '../components/PageHeader';
 import { TransactionForm } from '../components/TransactionForm';
 import { TabbedTransactionTable } from '../components/TabbedTransactionTable';
-import { FixedExpenseCard } from '../components/FixedExpenseCard';
-import { EntryCard } from '../components/EntryCard';
+import { ItemCard } from '../components/ItemCard';
 
 interface PeriodDetailsProps {
   period: AccountingPeriod;
   transactions: Transaction[];
   onAddTransaction: AddTransactionHandler;
   onDeleteTransaction: DeleteTransactionHandler;
+  onUpdateTransaction: UpdateTransactionHandler;
   onUpdatePeriod: UpdatePeriodHandler;
   onAddFixedExpense: AddFixedExpenseHandler;
   onDeleteFixedExpense: DeleteFixedExpenseHandler;
+  onUpdateFixedExpense: UpdateFixedExpenseHandler;
   onAddEntry: AddEntryHandler;
   onDeleteEntry: DeleteEntryHandler;
+  onUpdateEntry: UpdateEntryHandler;
 }
 
 export const PeriodDetails: React.FC<PeriodDetailsProps> = ({
@@ -39,11 +42,14 @@ export const PeriodDetails: React.FC<PeriodDetailsProps> = ({
   transactions,
   onAddTransaction,
   onDeleteTransaction,
+  onUpdateTransaction,
   onUpdatePeriod,
   onAddFixedExpense,
   onDeleteFixedExpense,
+  onUpdateFixedExpense,
   onAddEntry,
-  onDeleteEntry
+  onDeleteEntry,
+  onUpdateEntry
 }) => {
   const [isAddingTransaction, setIsAddingTransaction] = useState(false);
 
@@ -98,19 +104,36 @@ export const PeriodDetails: React.FC<PeriodDetailsProps> = ({
       />
 
       {/* Entry Card - Entradas do período */}
-      <EntryCard
+      <ItemCard
         periodId={period.id}
-        entries={period.entries || []}
-        onAddEntry={onAddEntry}
-        onDeleteEntry={onDeleteEntry}
+        items={period.entries || []}
+        onAdd={onAddEntry}
+        onUpdate={onUpdateEntry}
+        onDelete={onDeleteEntry}
+        title="Entradas"
+        subtitle="Receitas do período"
+        themeColor="emerald"
+        icon={Icons.TrendingUp}
+        addButtonText="Adicionar Entrada"
+        inputPlaceholder="Nome da entrada (ex: Salário)"
+        emptyMessage="Nenhuma entrada cadastrada"
+        isIncome={true}
       />
 
       {/* Fixed Expenses Card */}
-      <FixedExpenseCard
+      <ItemCard
         periodId={period.id}
-        fixedExpenses={period.fixedExpenses || []}
-        onAddFixedExpense={onAddFixedExpense}
-        onDeleteFixedExpense={onDeleteFixedExpense}
+        items={period.fixedExpenses || []}
+        onAdd={onAddFixedExpense}
+        onUpdate={onUpdateFixedExpense}
+        onDelete={onDeleteFixedExpense}
+        title="Gastos Fixos"
+        subtitle="Valores mensais recorrentes"
+        themeColor="amber"
+        icon={Icons.Calendar}
+        addButtonText="Adicionar Gasto Fixo"
+        inputPlaceholder="Nome do gasto (ex: Aluguel)"
+        emptyMessage="Nenhum gasto fixo cadastrado"
       />
 
       {/* Investment Percentage Input */}
@@ -187,6 +210,7 @@ export const PeriodDetails: React.FC<PeriodDetailsProps> = ({
       <TabbedTransactionTable
         transactions={transactions}
         onDeleteTransaction={onDeleteTransaction}
+        onUpdateTransaction={onUpdateTransaction}
         summary={summary}
       />
 

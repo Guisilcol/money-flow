@@ -64,3 +64,6 @@ export type AddFixedExpenseHandler = (expense: FixedExpense) => void;
 export type DeleteFixedExpenseHandler = (expenseId: string) => void;
 export type AddEntryHandler = (entry: Entry) => void;
 export type DeleteEntryHandler = (entryId: string) => void;
+export type UpdateEntryHandler = (entry: Entry) => void;
+export type UpdateFixedExpenseHandler = (expense: FixedExpense) => void;
+export type UpdateTransactionHandler = (transaction: Transaction) => void;

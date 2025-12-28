@@ -2,23 +2,16 @@ import React from 'react';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
 } from 'recharts';
-import { TransactionCategory } from '../types';
-import { CATEGORY_LABELS } from '../constants';
 
 interface ChartDataItem {
-    name: TransactionCategory;
+    name: string;
     value: number;
+    color: string;
 }
 
 interface CategoryChartProps {
     data: ChartDataItem[];
 }
-
-const CATEGORY_COLORS: Record<TransactionCategory, string> = {
-    [TransactionCategory.ENTRY]: '#10b981',
-    [TransactionCategory.FIXED_EXPENSE]: '#f59e0b',
-    [TransactionCategory.VARIABLE_EXPENSE]: '#6366f1'
-};
 
 export const CategoryChart: React.FC<CategoryChartProps> = ({ data }) => (
     <div className="h-72">
@@ -33,7 +26,6 @@ export const CategoryChart: React.FC<CategoryChartProps> = ({ data }) => (
                     axisLine={false}
                     tickLine={false}
                     tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 600 }}
-                    tickFormatter={(value: TransactionCategory) => CATEGORY_LABELS[value]}
                 />
                 <YAxis
                     axisLine={false}
@@ -49,13 +41,12 @@ export const CategoryChart: React.FC<CategoryChartProps> = ({ data }) => (
                     }}
                     cursor={{ fill: '#f8fafc' }}
                     formatter={(value: number) => [`R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, 'Valor']}
-                    labelFormatter={(label: TransactionCategory) => CATEGORY_LABELS[label]}
                 />
                 <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={40}>
                     {data.map((entry, index) => (
                         <Cell
                             key={`cell-${index}`}
-                            fill={CATEGORY_COLORS[entry.name]}
+                            fill={entry.color}
                         />
                     ))}
                 </Bar>

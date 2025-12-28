@@ -130,6 +130,41 @@ const App: React.FC = () => {
     }));
   };
 
+  // --- Update Handlers ---
+  const handleUpdateEntry = (updatedEntry: Entry) => {
+    setPeriods(prev => prev.map(p => {
+      if (p.id === updatedEntry.periodId) {
+        return {
+          ...p,
+          entries: (p.entries || []).map(e =>
+            e.id === updatedEntry.id ? updatedEntry : e
+          )
+        };
+      }
+      return p;
+    }));
+  };
+
+  const handleUpdateFixedExpense = (updatedExpense: FixedExpense) => {
+    setPeriods(prev => prev.map(p => {
+      if (p.id === updatedExpense.periodId) {
+        return {
+          ...p,
+          fixedExpenses: (p.fixedExpenses || []).map(e =>
+            e.id === updatedExpense.id ? updatedExpense : e
+          )
+        };
+      }
+      return p;
+    }));
+  };
+
+  const handleUpdateTransaction = (updatedTransaction: Transaction) => {
+    setTransactions(prev => prev.map(t =>
+      t.id === updatedTransaction.id ? updatedTransaction : t
+    ));
+  };
+
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-[#f8fafc] text-slate-900">
       {/* Sidebar - Periods */}
@@ -151,11 +186,14 @@ const App: React.FC = () => {
             transactions={periodTransactions}
             onAddTransaction={handleAddTransaction}
             onDeleteTransaction={deleteTransaction}
+            onUpdateTransaction={handleUpdateTransaction}
             onUpdatePeriod={handleUpdatePeriod}
             onAddFixedExpense={handleAddFixedExpense}
             onDeleteFixedExpense={handleDeleteFixedExpense}
+            onUpdateFixedExpense={handleUpdateFixedExpense}
             onAddEntry={handleAddEntry}
             onDeleteEntry={handleDeleteEntry}
+            onUpdateEntry={handleUpdateEntry}
           />
         )}
       </main>

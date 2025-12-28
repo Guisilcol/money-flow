@@ -6,6 +6,7 @@ import { FinancialHealthCard } from './FinancialHealthCard';
 interface TabbedTransactionTableProps {
     transactions: Transaction[];
     onDeleteTransaction: (id: string) => void;
+    onUpdateTransaction: (transaction: Transaction) => void;
     summary: PeriodSummary;
 }
 
@@ -19,6 +20,7 @@ const INTERNAL_TABS = [
 export const TabbedTransactionTable: React.FC<TabbedTransactionTableProps> = ({
     transactions,
     onDeleteTransaction,
+    onUpdateTransaction,
     summary
 }) => {
     const [activeTab, setActiveTab] = useState<InternalTabId>('overview');
@@ -28,6 +30,12 @@ export const TabbedTransactionTable: React.FC<TabbedTransactionTableProps> = ({
     const [filterMinValue, setFilterMinValue] = useState('');
     const [filterMaxValue, setFilterMaxValue] = useState('');
     const [filterName, setFilterName] = useState('');
+
+    // Edit states
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [editDate, setEditDate] = useState('');
+    const [editDescription, setEditDescription] = useState('');
+    const [editAmount, setEditAmount] = useState('');
 
     // Filtered and sorted transactions (all are variable expenses now)
     const filteredTransactions = useMemo(() => {
@@ -58,6 +66,34 @@ export const TabbedTransactionTable: React.FC<TabbedTransactionTableProps> = ({
     const hasActiveFilters = filterDate || filterMinValue || filterMaxValue || filterName;
 
     const total = filteredTransactions.reduce((acc, t) => acc + t.amount, 0);
+
+    const startEditing = (transaction: Transaction) => {
+        setEditingId(transaction.id);
+        setEditDate(transaction.date);
+        setEditDescription(transaction.description);
+        setEditAmount(transaction.amount.toString());
+    };
+
+    const cancelEditing = () => {
+        setEditingId(null);
+        setEditDate('');
+        setEditDescription('');
+        setEditAmount('');
+    };
+
+    const handleSubmitEdit = (e: React.FormEvent, transaction: Transaction) => {
+        e.preventDefault();
+        if (!editDate || !editDescription.trim() || !editAmount) return;
+
+        onUpdateTransaction({
+            ...transaction,
+            date: editDate,
+            description: editDescription.trim(),
+            amount: parseFloat(editAmount)
+        });
+
+        cancelEditing();
+    };
 
     return (
         <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
@@ -188,27 +224,85 @@ export const TabbedTransactionTable: React.FC<TabbedTransactionTableProps> = ({
                                         <th className="pb-4 px-3">Data</th>
                                         <th className="pb-4 px-3">Descrição</th>
                                         <th className="pb-4 px-3 text-right">Valor</th>
-                                        <th className="pb-4 px-3"></th>
+                                        <th className="pb-4 px-3 text-right">Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-50">
                                     {filteredTransactions.map(t => (
-                                        <tr key={t.id} className="group hover:bg-slate-50/80 transition-all">
-                                            <td className="py-5 px-3 text-xs font-mono font-bold text-slate-400">
-                                                {t.date.split('-').reverse().join('/')}
-                                            </td>
-                                            <td className="py-5 px-3 font-bold text-slate-900">{t.description}</td>
-                                            <td className="py-5 px-3 text-right font-black text-slate-900">
-                                                - R$ {t.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                                            </td>
-                                            <td className="py-5 px-3 text-right w-10">
-                                                <button
-                                                    onClick={() => onDeleteTransaction(t.id)}
-                                                    className="p-2 text-slate-200 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all rounded-lg hover:bg-rose-50"
-                                                >
-                                                    <Icons.Trash />
-                                                </button>
-                                            </td>
+                                        <tr key={t.id}>
+                                            {editingId === t.id ? (
+                                                <td colSpan={4} className="py-4 px-3">
+                                                    <form
+                                                        onSubmit={(e) => handleSubmitEdit(e, t)}
+                                                        className="flex gap-3 items-center"
+                                                    >
+                                                        <input
+                                                            type="date"
+                                                            value={editDate}
+                                                            onChange={(e) => setEditDate(e.target.value)}
+                                                            className="px-3 py-2 text-sm font-medium bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                        />
+                                                        <input
+                                                            type="text"
+                                                            value={editDescription}
+                                                            onChange={(e) => setEditDescription(e.target.value)}
+                                                            placeholder="Descrição"
+                                                            className="flex-1 px-3 py-2 text-sm font-medium bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                            autoFocus
+                                                        />
+                                                        <input
+                                                            type="number"
+                                                            value={editAmount}
+                                                            onChange={(e) => setEditAmount(e.target.value)}
+                                                            placeholder="Valor"
+                                                            step="0.01"
+                                                            min="0"
+                                                            className="w-28 px-3 py-2 text-sm font-black bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                        />
+                                                        <button
+                                                            type="submit"
+                                                            className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white font-bold rounded-xl transition-all text-sm"
+                                                        >
+                                                            Salvar
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={cancelEditing}
+                                                            className="px-3 py-2 text-slate-400 hover:text-slate-600 font-bold transition-all text-sm"
+                                                        >
+                                                            Cancelar
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            ) : (
+                                                <>
+                                                    <td className="py-5 px-3 text-xs font-mono font-bold text-slate-400">
+                                                        {t.date.split('-').reverse().join('/')}
+                                                    </td>
+                                                    <td className="py-5 px-3 font-bold text-slate-900">{t.description}</td>
+                                                    <td className="py-5 px-3 text-right font-black text-slate-900">
+                                                        - R$ {t.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                                    </td>
+                                                    <td className="py-5 px-3 text-right">
+                                                        <div className="flex items-center justify-end gap-1">
+                                                            <button
+                                                                onClick={() => startEditing(t)}
+                                                                className="p-2 text-slate-300 hover:text-indigo-500 transition-all rounded-lg hover:bg-indigo-50"
+                                                                title="Editar"
+                                                            >
+                                                                <Icons.Edit />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => onDeleteTransaction(t.id)}
+                                                                className="p-2 text-slate-300 hover:text-rose-500 transition-all rounded-lg hover:bg-rose-50"
+                                                                title="Excluir"
+                                                            >
+                                                                <Icons.Trash />
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </>
+                                            )}
                                         </tr>
                                     ))}
                                     {filteredTransactions.length === 0 && (
