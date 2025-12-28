@@ -127,7 +127,6 @@ export const PeriodDetails: React.FC<PeriodDetailsProps> = ({
         transactions={transactions}
         entries={period.entries || []}
         fixedExpenses={period.fixedExpenses || []}
-        summary={summary}
         onAddTransaction={onAddTransaction}
         onDeleteTransaction={onDeleteTransaction}
         onUpdateTransaction={onUpdateTransaction}

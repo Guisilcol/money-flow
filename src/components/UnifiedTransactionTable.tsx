@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Transaction, Entry, FixedExpense, PeriodSummary } from '../types';
+import { Transaction, Entry, FixedExpense } from '../types';
 import { Icons } from '../constants';
 import { generateId } from '../utils';
 
@@ -18,7 +18,6 @@ interface UnifiedTransactionTableProps {
     entries: Entry[];
     fixedExpenses: FixedExpense[];
     periodId: string;
-    summary: PeriodSummary;
     // Transaction handlers
     onDeleteTransaction: (id: string) => void;
     onUpdateTransaction: (transaction: Transaction) => void;
@@ -53,7 +52,6 @@ export const UnifiedTransactionTable: React.FC<UnifiedTransactionTableProps> = (
     entries,
     fixedExpenses,
     periodId,
-    summary,
     onDeleteTransaction,
     onUpdateTransaction,
     onAddTransaction,
@@ -276,8 +274,8 @@ export const UnifiedTransactionTable: React.FC<UnifiedTransactionTableProps> = (
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`flex-1 px-4 py-4 font-bold text-sm transition-all relative ${isActive
-                                    ? 'text-slate-900 bg-slate-50/50'
-                                    : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50/30'
+                                ? 'text-slate-900 bg-slate-50/50'
+                                : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50/30'
                                 }`}
                         >
                             {tab.label}
