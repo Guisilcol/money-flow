@@ -15,6 +15,7 @@ interface PeriodDetailsProps {
   transactions: Transaction[];
   onAddTransaction: (transaction: Transaction) => void;
   onDeleteTransaction: (id: string) => void;
+  onUpdatePeriod: (period: AccountingPeriod) => void;
 }
 
 type TabId = 'overview' | 'fixed' | 'variable' | 'entries';
@@ -30,7 +31,8 @@ export const PeriodDetails: React.FC<PeriodDetailsProps> = ({
   period,
   transactions,
   onAddTransaction,
-  onDeleteTransaction
+  onDeleteTransaction,
+  onUpdatePeriod
 }) => {
   const [activeTab, setActiveTab] = useState<TabId>('overview');
   const [isAddingTransaction, setIsAddingTransaction] = useState(false);
@@ -45,14 +47,22 @@ export const PeriodDetails: React.FC<PeriodDetailsProps> = ({
     const fixedExpenses = expenses.filter(t => t.isFixed).reduce((acc, curr) => acc + curr.amount, 0);
     const variableExpenses = expenses.filter(t => !t.isFixed).reduce((acc, curr) => acc + curr.amount, 0);
 
+    // Novos cálculos
+    const investmentAmount = totalEntries * ((period.investmentPercentage || 0) / 100);
+    const projectedVariableBalance = totalEntries - investmentAmount - fixedExpenses;
+    const currentVariableBalance = projectedVariableBalance - variableExpenses;
+
     return {
       totalEntries,
       totalExpenses,
       fixedExpenses,
       variableExpenses,
-      balance: totalEntries - totalExpenses
+      balance: totalEntries - totalExpenses,
+      investmentAmount,
+      projectedVariableBalance,
+      currentVariableBalance
     };
-  }, [transactions]);
+  }, [transactions, period.investmentPercentage]);
 
   const filteredTransactions = transactions
     .filter(t => {
@@ -98,26 +108,73 @@ export const PeriodDetails: React.FC<PeriodDetailsProps> = ({
         }
       />
 
+      {/* Investment Percentage Input */}
+      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          <label className="text-sm font-bold text-slate-600 whitespace-nowrap">
+            Porcentagem de Investimento:
+          </label>
+          <div className="flex items-center gap-4 flex-1">
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={period.investmentPercentage || 0}
+              onChange={(e) => onUpdatePeriod({ ...period, investmentPercentage: Number(e.target.value) })}
+              className="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+            />
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                min="0"
+                max="100"
+                value={period.investmentPercentage || 0}
+                onChange={(e) => onUpdatePeriod({ ...period, investmentPercentage: Math.min(100, Math.max(0, Number(e.target.value))) })}
+                className="w-20 px-3 py-2 text-center font-bold text-slate-900 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+              <span className="text-sm font-bold text-slate-500">%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Dashboard Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatCard
-          title="Entradas"
+          title="Total de Entradas"
           amount={summary.totalEntries}
           icon={Icons.TrendingUp}
           colorClass="bg-emerald-50 text-emerald-600"
         />
         <StatCard
-          title="Saídas Totais"
-          amount={summary.totalExpenses}
-          icon={Icons.TrendingDown}
-          colorClass="bg-rose-50 text-rose-600"
+          title="Investimento"
+          amount={summary.investmentAmount}
+          icon={Icons.TrendingUp}
+          colorClass="bg-indigo-50 text-indigo-600"
+          subText={`${period.investmentPercentage || 0}% das entradas`}
         />
         <StatCard
-          title="Gastos Fixos"
+          title="Total Gastos Fixos"
           amount={summary.fixedExpenses}
           icon={Icons.Calendar}
           colorClass="bg-amber-50 text-amber-600"
-          subText={`Variáveis: R$ ${summary.variableExpenses.toFixed(2)}`}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <StatCard
+          title="Saldo Projetado (Gasto Variável)"
+          amount={summary.projectedVariableBalance}
+          icon={Icons.TrendingUp}
+          colorClass="bg-sky-50 text-sky-600"
+          subText="Entradas - Investimento - Fixos"
+        />
+        <StatCard
+          title="Saldo Atual (Gasto Variável)"
+          amount={summary.currentVariableBalance}
+          icon={Icons.TrendingDown}
+          colorClass={summary.currentVariableBalance >= 0 ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"}
+          subText="Projetado - Gastos Variáveis"
         />
       </div>
 

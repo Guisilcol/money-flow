@@ -55,6 +55,10 @@ const App: React.FC = () => {
     setTransactions(prev => prev.filter(t => t.id !== id));
   };
 
+  const handleUpdatePeriod = (updatedPeriod: AccountingPeriod) => {
+    setPeriods(prev => prev.map(p => p.id === updatedPeriod.id ? updatedPeriod : p));
+  };
+
   const deletePeriod = (id: string) => {
     const confirmDelete = window.confirm('Deseja excluir este período permanentemente? Todas as transações serão perdidas.');
 
@@ -92,6 +96,7 @@ const App: React.FC = () => {
             transactions={periodTransactions}
             onAddTransaction={handleAddTransaction}
             onDeleteTransaction={deleteTransaction}
+            onUpdatePeriod={handleUpdatePeriod}
           />
         )}
       </main>

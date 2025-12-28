@@ -31,7 +31,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       name: `${startDate} - ${endDate}`,
       startDate,
       endDate,
-      isOpen: true
+      isOpen: true,
+      investmentPercentage: 0
     };
 
     onCreatePeriod(newPeriod);

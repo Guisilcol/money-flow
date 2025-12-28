@@ -21,6 +21,7 @@ export interface AccountingPeriod {
   startDate: string;
   endDate: string;
   isOpen: boolean;
+  investmentPercentage: number;
 }
 
 export interface PeriodSummary {
@@ -29,4 +30,7 @@ export interface PeriodSummary {
   fixedExpenses: number;
   variableExpenses: number;
   balance: number;
+  investmentAmount: number;
+  projectedVariableBalance: number;
+  currentVariableBalance: number;
 }
