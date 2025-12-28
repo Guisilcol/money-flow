@@ -108,6 +108,12 @@ const App: React.FC = () => {
     }
   };
 
+  const handleRenamePeriod = (id: string, newName: string) => {
+    setPeriods(prev => prev.map(p =>
+      p.id === id ? { ...p, name: newName } : p
+    ));
+  };
+
   // --- Fixed Expense Handlers ---
   const handleAddFixedExpense = (expense: FixedExpense) => {
     setPeriods(prev => prev.map(p => {
@@ -307,6 +313,7 @@ const App: React.FC = () => {
         onSelectPeriod={handleSelectPeriod}
         onCreatePeriod={handleCreatePeriod}
         onDeletePeriod={deletePeriod}
+        onRenamePeriod={handleRenamePeriod}
         onOpenTemplate={handleOpenTemplate}
         onExportData={handleExportData}
         onImportData={handleImportData}

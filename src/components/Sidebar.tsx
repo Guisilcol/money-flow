@@ -11,6 +11,7 @@ interface SidebarProps {
   onSelectPeriod: (id: string) => void;
   onCreatePeriod: (period: AccountingPeriod) => void;
   onDeletePeriod: (id: string) => void;
+  onRenamePeriod: (id: string, newName: string) => void;
   onOpenTemplate: () => void;
   onExportData: () => void;
   onImportData: (file: File) => void;
@@ -23,12 +24,40 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onSelectPeriod,
   onCreatePeriod,
   onDeletePeriod,
+  onRenamePeriod,
   onOpenTemplate,
   onExportData,
   onImportData,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingPeriodId, setEditingPeriodId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const startEditing = (period: AccountingPeriod) => {
+    setEditingPeriodId(period.id);
+    setEditingName(period.name);
+  };
+
+  const cancelEditing = () => {
+    setEditingPeriodId(null);
+    setEditingName('');
+  };
+
+  const saveEditing = () => {
+    if (editingPeriodId && editingName.trim()) {
+      onRenamePeriod(editingPeriodId, editingName.trim());
+    }
+    cancelEditing();
+  };
+
+  const handleEditKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      saveEditing();
+    } else if (e.key === 'Escape') {
+      cancelEditing();
+    }
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -120,6 +149,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           ) : (
             periods.map(period => {
               const isSelected = selectedPeriodId === period.id;
+              const isEditing = editingPeriodId === period.id;
               return (
                 <div
                   key={period.id}
@@ -135,14 +165,51 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <div className={`p-2 rounded-lg shrink-0 ${isSelected ? 'bg-white/10 text-white' : 'bg-slate-50 text-slate-600'}`}>
                       <Icons.Calendar />
                     </div>
-                    <div className="overflow-hidden">
-                      <div className={`font-bold truncate text-sm ${isSelected ? 'text-white' : 'text-slate-900'}`}>{period.name}</div>
+                    <div className="overflow-hidden flex-1">
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={editingName}
+                          onChange={(e) => setEditingName(e.target.value)}
+                          onKeyDown={handleEditKeyDown}
+                          onBlur={saveEditing}
+                          onClick={(e) => e.stopPropagation()}
+                          autoFocus
+                          className={`w-full font-bold text-sm bg-transparent border-b-2 outline-none ${isSelected
+                              ? 'text-white border-white/50 focus:border-white'
+                              : 'text-slate-900 border-indigo-300 focus:border-indigo-500'
+                            }`}
+                        />
+                      ) : (
+                        <div className={`font-bold truncate text-sm ${isSelected ? 'text-white' : 'text-slate-900'}`}>{period.name}</div>
+                      )}
                       <div className={`text-[10px] font-mono font-medium ${isSelected ? 'text-slate-400' : 'text-slate-400'}`}>
                         {period.startDate.split('-').reverse().slice(0, 2).join('/')} — {period.endDate.split('-').reverse().slice(0, 2).join('/')}
                       </div>
                     </div>
                   </button>
 
+                  {/* Edit button */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      startEditing(period);
+                    }}
+                    className={`h-full p-3 shrink-0 transition-colors cursor-pointer flex items-center justify-center ${isSelected
+                      ? 'text-slate-500 hover:text-indigo-300 hover:bg-white/10'
+                      : 'text-slate-300 hover:text-indigo-600 hover:bg-indigo-50'
+                      }`}
+                    title="Renomear período"
+                    aria-label="Renomear período"
+                  >
+                    <div className="pointer-events-none">
+                      <Icons.Edit />
+                    </div>
+                  </button>
+
+                  {/* Delete button */}
                   <button
                     type="button"
                     onClick={(e) => {
@@ -150,7 +217,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       e.stopPropagation();
                       onDeletePeriod(period.id);
                     }}
-                    className={`h-full p-4 shrink-0 transition-colors cursor-pointer flex items-center justify-center ${isSelected
+                    className={`h-full p-3 shrink-0 transition-colors cursor-pointer flex items-center justify-center ${isSelected
                       ? 'text-slate-500 hover:text-rose-400 hover:bg-white/10'
                       : 'text-slate-300 hover:text-rose-600 hover:bg-rose-50'
                       }`}
