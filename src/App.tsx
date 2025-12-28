@@ -27,24 +27,30 @@ const App: React.FC = () => {
 
   // --- Initial Data ---
   useEffect(() => {
-    const savedPeriods = loadPeriods();
-    const savedTransactions = loadTransactions();
-    const savedTemplate = loadTemplate();
+    const loadData = async () => {
+      const savedPeriods = await loadPeriods();
+      const savedTransactions = await loadTransactions();
+      const savedTemplate = await loadTemplate();
 
-    setPeriods(savedPeriods);
-    if (savedPeriods.length > 0 && !selectedPeriodId) {
-      setSelectedPeriodId(savedPeriods[0].id);
-    }
-    setTransactions(savedTransactions);
-    setTemplate(savedTemplate);
-    setIsInitialized(true);
+      setPeriods(savedPeriods);
+      if (savedPeriods.length > 0 && !selectedPeriodId) {
+        setSelectedPeriodId(savedPeriods[0].id);
+      }
+      setTransactions(savedTransactions);
+      setTemplate(savedTemplate);
+      setIsInitialized(true);
+    };
+    loadData();
   }, []);
 
   useEffect(() => {
     if (!isInitialized) return;
-    savePeriods(periods);
-    saveTransactions(transactions);
-    saveTemplate(template);
+    const saveData = async () => {
+      await savePeriods(periods);
+      await saveTransactions(transactions);
+      await saveTemplate(template);
+    };
+    saveData();
   }, [periods, transactions, template, isInitialized]);
 
   // --- Handlers ---
