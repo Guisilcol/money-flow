@@ -116,8 +116,8 @@ export const PeriodDetails: React.FC<PeriodDetailsProps> = ({
         />
         <MiniStatCard
           title="Gasto Diário recomendado"
-          amount={calculateDailyBudget(summary.currentVariableBalance, period.endDate)}
-          subtitle={`${getRemainingDays(period.endDate)} dias restantes`}
+          amount={calculateDailyBudget(summary.currentVariableBalance, period.endDate, transactions)}
+          subtitle={`${getRemainingDays(period.endDate, transactions)} dias restantes`}
           colorClass="bg-indigo-50 text-indigo-700"
           icon={Icons.Calendar}
         />

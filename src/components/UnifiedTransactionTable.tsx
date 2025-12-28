@@ -44,7 +44,8 @@ const TABS: { id: TabId; label: string; color: string }[] = [
 const TYPE_BADGES = {
     entry: { label: 'Entrada', bgColor: 'bg-emerald-100', textColor: 'text-emerald-700' },
     fixed: { label: 'Fixo', bgColor: 'bg-amber-100', textColor: 'text-amber-700' },
-    variable: { label: 'Variável', bgColor: 'bg-rose-100', textColor: 'text-rose-700' }
+    variable: { label: 'Variável', bgColor: 'bg-rose-100', textColor: 'text-rose-700' },
+    zero: { label: 'Zero', bgColor: 'bg-purple-100', textColor: 'text-purple-700' }
 };
 
 export const UnifiedTransactionTable: React.FC<UnifiedTransactionTableProps> = ({
@@ -67,7 +68,7 @@ export const UnifiedTransactionTable: React.FC<UnifiedTransactionTableProps> = (
 
     // Add form states
     const [isAdding, setIsAdding] = useState(false);
-    const [addType, setAddType] = useState<'entry' | 'fixed' | 'variable'>('variable');
+    const [addType, setAddType] = useState<'entry' | 'fixed' | 'variable' | 'zero'>('variable');
     const [addName, setAddName] = useState('');
     const [addAmount, setAddAmount] = useState('');
     const [addDate, setAddDate] = useState(new Date().toISOString().split('T')[0]);
@@ -230,10 +231,12 @@ export const UnifiedTransactionTable: React.FC<UnifiedTransactionTableProps> = (
 
     const handleSubmitAdd = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!addName.trim() || !addAmount) return;
+
+        // Zero type doesn't need name or amount validation
+        if (addType !== 'zero' && (!addName.trim() || !addAmount)) return;
 
         const id = generateId();
-        const amount = parseFloat(addAmount);
+        const amount = addType === 'zero' ? 0 : parseFloat(addAmount);
 
         switch (addType) {
             case 'entry':
@@ -253,12 +256,23 @@ export const UnifiedTransactionTable: React.FC<UnifiedTransactionTableProps> = (
                     date: addDate
                 });
                 break;
+            case 'zero':
+                onAddTransaction({
+                    id,
+                    periodId,
+                    type: 'EXPENSE' as any,
+                    category: 'VARIABLE_EXPENSE' as any,
+                    description: 'ZERO GASTOS',
+                    amount: 0,
+                    date: addDate
+                });
+                break;
         }
 
         resetAddForm();
     };
 
-    const startAdding = (type: 'entry' | 'fixed' | 'variable') => {
+    const startAdding = (type: 'entry' | 'fixed' | 'variable' | 'zero') => {
         setAddType(type);
         setIsAdding(true);
     };
@@ -320,12 +334,20 @@ export const UnifiedTransactionTable: React.FC<UnifiedTransactionTableProps> = (
                             </button>
                         )}
                         {(activeTab === 'all' || activeTab === 'variable') && (
-                            <button
-                                onClick={() => startAdding('variable')}
-                                className="px-4 py-3 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-xl transition-all text-sm flex items-center gap-2"
-                            >
-                                <Icons.Plus /> Variável
-                            </button>
+                            <>
+                                <button
+                                    onClick={() => startAdding('variable')}
+                                    className="px-4 py-3 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-xl transition-all text-sm flex items-center gap-2"
+                                >
+                                    <Icons.Plus /> Variável
+                                </button>
+                                <button
+                                    onClick={() => startAdding('zero')}
+                                    className="px-4 py-3 bg-purple-500 hover:bg-purple-600 text-white font-bold rounded-xl transition-all text-sm flex items-center gap-2"
+                                >
+                                    <Icons.Plus /> Zero
+                                </button>
+                            </>
                         )}
                     </div>
                 </div>
@@ -337,31 +359,38 @@ export const UnifiedTransactionTable: React.FC<UnifiedTransactionTableProps> = (
                             <div className={`px-3 py-2 rounded-lg text-sm font-bold ${TYPE_BADGES[addType].bgColor} ${TYPE_BADGES[addType].textColor}`}>
                                 {TYPE_BADGES[addType].label}
                             </div>
-                            <input
-                                type="text"
-                                value={addName}
-                                onChange={(e) => setAddName(e.target.value)}
-                                placeholder="Nome / Descrição"
-                                className="flex-1 min-w-[200px] px-4 py-2 text-sm font-medium bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                autoFocus
-                            />
-                            {addType === 'variable' && (
+                            {addType === 'zero' ? (
+                                <span className="flex-1 text-sm font-bold text-slate-600">ZERO GASTOS</span>
+                            ) : (
+                                <input
+                                    type="text"
+                                    value={addName}
+                                    onChange={(e) => setAddName(e.target.value)}
+                                    placeholder="Nome / Descrição"
+                                    className="flex-1 min-w-[200px] px-4 py-2 text-sm font-medium bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    autoFocus
+                                />
+                            )}
+                            {(addType === 'variable' || addType === 'zero') && (
                                 <input
                                     type="date"
                                     value={addDate}
                                     onChange={(e) => setAddDate(e.target.value)}
                                     className="px-4 py-2 text-sm font-medium bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    autoFocus={addType === 'zero'}
                                 />
                             )}
-                            <input
-                                type="number"
-                                value={addAmount}
-                                onChange={(e) => setAddAmount(e.target.value)}
-                                placeholder="Valor"
-                                step="0.01"
-                                min="0"
-                                className="w-32 px-4 py-2 text-sm font-black bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            />
+                            {addType !== 'zero' && (
+                                <input
+                                    type="number"
+                                    value={addAmount}
+                                    onChange={(e) => setAddAmount(e.target.value)}
+                                    placeholder="Valor"
+                                    step="0.01"
+                                    min="0"
+                                    className="w-32 px-4 py-2 text-sm font-black bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                />
+                            )}
                             <button
                                 type="submit"
                                 className="px-5 py-2 bg-indigo-500 hover:bg-indigo-600 text-white font-bold rounded-xl transition-all text-sm"

@@ -1,12 +1,24 @@
 import { Transaction } from '../types';
 
 /**
+ * Retorna as datas que tem lançamentos "ZERO GASTOS"
+ */
+export function getZeroDays(transactions: Transaction[]): Set<string> {
+  return new Set(
+    transactions
+      .filter(t => t.description === 'ZERO GASTOS' && t.amount === 0)
+      .map(t => t.date)
+  );
+}
+
+/**
  * Calcula o gasto diário sugerido baseado no saldo variável disponível
- * e nos dias restantes do período.
+ * e nos dias restantes do período, excluindo dias "zerados".
  */
 export function calculateDailyBudget(
   currentVariableBalance: number,
   endDate: string,
+  transactions: Transaction[] = [],
   currentDate: Date = new Date()
 ): number {
   const end = new Date(endDate + 'T23:59:59');
@@ -17,18 +29,38 @@ export function calculateDailyBudget(
   
   // Calcula dias restantes (incluindo hoje)
   const diffTime = end.getTime() - today.getTime();
-  const remainingDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+  const totalRemainingDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
   
-  if (remainingDays <= 0) return 0;
+  if (totalRemainingDays <= 0) return 0;
   
-  return currentVariableBalance / remainingDays;
+  // Conta quantos dias "zerados" estão nos dias restantes (hoje até o fim)
+  const zeroDays = getZeroDays(transactions);
+  let zeroDaysInRemaining = 0;
+  
+  const current = new Date(today);
+  while (current <= end) {
+    const dateStr = current.toISOString().split('T')[0];
+    if (zeroDays.has(dateStr)) {
+      zeroDaysInRemaining++;
+    }
+    current.setDate(current.getDate() + 1);
+  }
+  
+  // Dias efetivos = dias restantes - dias zerados
+  const effectiveRemainingDays = totalRemainingDays - zeroDaysInRemaining;
+  
+  if (effectiveRemainingDays <= 0) return 0;
+  
+  return currentVariableBalance / effectiveRemainingDays;
 }
 
 /**
- * Retorna o número de dias restantes no período (incluindo hoje)
+ * Retorna o número de dias restantes no período (incluindo hoje),
+ * excluindo dias com "ZERO GASTOS".
  */
 export function getRemainingDays(
   endDate: string,
+  transactions: Transaction[] = [],
   currentDate: Date = new Date()
 ): number {
   const end = new Date(endDate + 'T23:59:59');
@@ -37,7 +69,22 @@ export function getRemainingDays(
   if (today > end) return 0;
   
   const diffTime = end.getTime() - today.getTime();
-  return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+  const totalRemainingDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+  
+  // Conta dias zerados nos dias restantes
+  const zeroDays = getZeroDays(transactions);
+  let zeroDaysInRemaining = 0;
+  
+  const current = new Date(today);
+  while (current <= end) {
+    const dateStr = current.toISOString().split('T')[0];
+    if (zeroDays.has(dateStr)) {
+      zeroDaysInRemaining++;
+    }
+    current.setDate(current.getDate() + 1);
+  }
+  
+  return totalRemainingDays - zeroDaysInRemaining;
 }
 
 /**
