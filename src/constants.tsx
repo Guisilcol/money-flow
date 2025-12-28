@@ -1,9 +1,11 @@
 
 import React from 'react';
+import { TransactionCategory } from './types';
 
-export const CATEGORIES = {
-  ENTRY: ['Salário', 'Freelance', 'Investimentos', 'Presente', 'Outros'],
-  EXPENSE: ['Moradia', 'Alimentação', 'Transporte', 'Lazer', 'Saúde', 'Educação', 'Assinaturas', 'Outros']
+export const CATEGORY_LABELS: Record<TransactionCategory, string> = {
+  [TransactionCategory.FIXED_EXPENSE]: 'Gasto Fixo',
+  [TransactionCategory.VARIABLE_EXPENSE]: 'Gasto Variável',
+  [TransactionCategory.ENTRY]: 'Entrada'
 };
 
 export const Icons = {

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { Transaction, TransactionType, PeriodSummary } from '../types';
-import { Icons } from '../constants';
+import { Transaction, TransactionType, TransactionCategory, PeriodSummary } from '../types';
+import { Icons, CATEGORY_LABELS } from '../constants';
 import { CategoryChart } from './CategoryChart';
 import { FinancialHealthCard } from './FinancialHealthCard';
 
@@ -8,7 +8,7 @@ interface TabbedTransactionTableProps {
     transactions: Transaction[];
     onDeleteTransaction: (id: string) => void;
     summary: PeriodSummary;
-    chartData: { name: string; value: number; type: TransactionType }[];
+    chartData: { name: TransactionCategory; value: number }[];
 }
 
 type InternalTabId = 'overview' | 'transactions';
@@ -31,13 +31,10 @@ export const TabbedTransactionTable: React.FC<TabbedTransactionTableProps> = ({
     const [filterMinValue, setFilterMinValue] = useState('');
     const [filterMaxValue, setFilterMaxValue] = useState('');
     const [filterName, setFilterName] = useState('');
-    const [filterCategory, setFilterCategory] = useState('');
+    const [filterCategory, setFilterCategory] = useState<TransactionCategory | ''>('');
 
-    // Get unique categories for the dropdown
-    const categories = useMemo(() => {
-        const cats = [...new Set(transactions.map(t => t.category))];
-        return cats.sort();
-    }, [transactions]);
+    // Get categories for the dropdown (all 3 possible values)
+    const categories = Object.values(TransactionCategory);
 
     // Filtered and sorted transactions
     const filteredTransactions = useMemo(() => {
@@ -189,12 +186,12 @@ export const TabbedTransactionTable: React.FC<TabbedTransactionTableProps> = ({
                                     <label className="text-xs font-bold text-slate-500">Categoria</label>
                                     <select
                                         value={filterCategory}
-                                        onChange={(e) => setFilterCategory(e.target.value)}
+                                        onChange={(e) => setFilterCategory(e.target.value as TransactionCategory | '')}
                                         className="w-full px-3 py-2.5 text-sm font-medium bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                                     >
                                         <option value="">Todas</option>
                                         {categories.map(cat => (
-                                            <option key={cat} value={cat}>{cat}</option>
+                                            <option key={cat} value={cat}>{CATEGORY_LABELS[cat]}</option>
                                         ))}
                                     </select>
                                 </div>
@@ -219,10 +216,9 @@ export const TabbedTransactionTable: React.FC<TabbedTransactionTableProps> = ({
                             <table className="w-full">
                                 <thead>
                                     <tr className="text-left text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">
-                                        <th className="pb-4 px-3">Tipo</th>
+                                        <th className="pb-4 px-3">Categoria</th>
                                         <th className="pb-4 px-3">Data</th>
                                         <th className="pb-4 px-3">Descrição</th>
-                                        <th className="pb-4 px-3">Categoria</th>
                                         <th className="pb-4 px-3 text-right">Valor</th>
                                         <th className="pb-4 px-3"></th>
                                     </tr>
@@ -231,28 +227,20 @@ export const TabbedTransactionTable: React.FC<TabbedTransactionTableProps> = ({
                                     {filteredTransactions.map(t => (
                                         <tr key={t.id} className="group hover:bg-slate-50/80 transition-all">
                                             <td className="py-5 px-3">
-                                                <span className={`text-[9px] font-black px-3 py-1.5 rounded-full uppercase tracking-tighter ${t.type === TransactionType.ENTRY
+                                                <span className={`text-[9px] font-black px-3 py-1.5 rounded-full uppercase tracking-tighter ${t.category === TransactionCategory.ENTRY
                                                     ? 'bg-emerald-100 text-emerald-600'
-                                                    : t.isFixed
+                                                    : t.category === TransactionCategory.FIXED_EXPENSE
                                                         ? 'bg-amber-100 text-amber-600'
                                                         : 'bg-rose-100 text-rose-600'
                                                     }`}>
-                                                    {t.type === TransactionType.ENTRY
-                                                        ? 'Entrada'
-                                                        : t.isFixed
-                                                            ? 'Fixo'
-                                                            : 'Variável'}
+                                                    {CATEGORY_LABELS[t.category]}
                                                 </span>
                                             </td>
                                             <td className="py-5 px-3 text-xs font-mono font-bold text-slate-400">
                                                 {t.date.split('-').reverse().join('/')}
                                             </td>
                                             <td className="py-5 px-3 font-bold text-slate-900">{t.description}</td>
-                                            <td className="py-5 px-3">
-                                                <span className="text-[9px] font-black px-3 py-1.5 rounded-full bg-slate-100 text-slate-500 uppercase tracking-tighter">
-                                                    {t.category}
-                                                </span>
-                                            </td>
+
                                             <td className={`py-5 px-3 text-right font-black ${t.type === TransactionType.ENTRY ? 'text-emerald-600' : 'text-slate-900'}`}>
                                                 {t.type === TransactionType.ENTRY ? '+' : '-'} R$ {t.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                                             </td>

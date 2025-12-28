@@ -4,15 +4,20 @@ export enum TransactionType {
   EXPENSE = 'EXPENSE'
 }
 
+export enum TransactionCategory {
+  FIXED_EXPENSE = 'FIXED_EXPENSE',
+  VARIABLE_EXPENSE = 'VARIABLE_EXPENSE',
+  ENTRY = 'ENTRY'
+}
+
 export interface Transaction {
   id: string;
   periodId: string;
   type: TransactionType;
-  category: string;
+  category: TransactionCategory;
   amount: number;
   description: string;
   date: string;
-  isFixed: boolean;
 }
 
 export interface AccountingPeriod {

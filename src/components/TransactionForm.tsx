@@ -1,6 +1,6 @@
-import React from 'react';
-import { Transaction, TransactionType } from '../types';
-import { CATEGORIES } from '../constants';
+import React, { useState } from 'react';
+import { Transaction, TransactionType, TransactionCategory } from '../types';
+import { CATEGORY_LABELS } from '../constants';
 import { generateId, getTodayStr } from '../utils';
 
 type ActiveTab = 'overview' | 'fixed' | 'variable' | 'entries';
@@ -18,23 +18,43 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
     onSubmit,
     onCancel
 }) => {
+    // Estado para rastrear o tipo selecionado dinamicamente
+    const getInitialType = () => {
+        if (activeTab === 'fixed') return TransactionType.EXPENSE;
+        if (activeTab === 'entries') return TransactionType.ENTRY;
+        return TransactionType.EXPENSE;
+    };
+
+    const [selectedType, setSelectedType] = useState<TransactionType>(getInitialType);
+
     const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
-        const type = formData.get('type') as TransactionType;
 
-        const isFixedFormValue = formData.get('isFixed') === 'true';
-        const isFixed = activeTab === 'fixed' ? true : isFixedFormValue;
+        // Determinar categoria baseado no tipo e seleção do usuário
+        let category: TransactionCategory;
+        if (selectedType === TransactionType.ENTRY) {
+            category = TransactionCategory.ENTRY;
+        } else {
+            // Para EXPENSE, usar valor do formulário ou default baseado na aba
+            const categoryValue = formData.get('category') as TransactionCategory;
+            if (activeTab === 'fixed') {
+                category = TransactionCategory.FIXED_EXPENSE;
+            } else if (categoryValue) {
+                category = categoryValue;
+            } else {
+                category = TransactionCategory.VARIABLE_EXPENSE;
+            }
+        }
 
         const newTransaction: Transaction = {
             id: generateId(),
             periodId: periodId,
-            type: type,
-            category: formData.get('category') as string,
+            type: selectedType,
+            category: category,
             amount: parseFloat(formData.get('amount') as string),
             description: formData.get('description') as string,
-            date: formData.get('date') as string,
-            isFixed: type === TransactionType.EXPENSE ? isFixed : false
+            date: formData.get('date') as string
         };
 
         onSubmit(newTransaction);
@@ -50,7 +70,8 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
                             type="radio"
                             name="type"
                             value={TransactionType.EXPENSE}
-                            defaultChecked={activeTab !== 'entries'}
+                            checked={selectedType === TransactionType.EXPENSE}
+                            onChange={() => setSelectedType(TransactionType.EXPENSE)}
                             className="hidden peer"
                         />
                         <div className="text-center py-3 rounded-xl peer-checked:bg-white peer-checked:shadow-md text-[10px] font-black text-slate-400 peer-checked:text-indigo-600 uppercase tracking-widest transition-all">
@@ -62,7 +83,8 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
                             type="radio"
                             name="type"
                             value={TransactionType.ENTRY}
-                            defaultChecked={activeTab === 'entries'}
+                            checked={selectedType === TransactionType.ENTRY}
+                            onChange={() => setSelectedType(TransactionType.ENTRY)}
                             className="hidden peer"
                         />
                         <div className="text-center py-3 rounded-xl peer-checked:bg-white peer-checked:shadow-md text-[10px] font-black text-slate-400 peer-checked:text-emerald-600 uppercase tracking-widest transition-all">
@@ -116,30 +138,37 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
                 </div>
             </div>
 
-            <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
-                    Categoria
-                </label>
-                <select
-                    name="category"
-                    className="w-full p-4 bg-slate-50 border-slate-200 border-2 rounded-2xl focus:border-indigo-500 outline-none bg-white font-bold"
-                >
-                    {[...CATEGORIES.ENTRY, ...CATEGORIES.EXPENSE].map(cat => (
-                        <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                </select>
-            </div>
-
-            {/* Opção Fixa */}
-            {activeTab !== 'fixed' && (
-                <div className="flex items-center gap-4 py-4 px-4 bg-slate-50 rounded-2xl">
-                    <div className="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" name="isFixed" value="true" id="isFixed" className="sr-only peer" />
-                        <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                    </div>
-                    <label htmlFor="isFixed" className="text-sm font-bold text-slate-600 select-none">
-                        Este é um gasto fixo?
+            {/* Seletor de Categoria para Gastos (só aparece quando tipo é EXPENSE e não está na aba Fixed) */}
+            {selectedType === TransactionType.EXPENSE && activeTab !== 'fixed' && (
+                <div>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
+                        Tipo de Gasto
                     </label>
+                    <div className="flex bg-slate-100 p-1.5 rounded-2xl">
+                        <label className="flex-1 cursor-pointer">
+                            <input
+                                type="radio"
+                                name="category"
+                                value={TransactionCategory.VARIABLE_EXPENSE}
+                                defaultChecked
+                                className="hidden peer"
+                            />
+                            <div className="text-center py-3 rounded-xl peer-checked:bg-white peer-checked:shadow-md text-[10px] font-black text-slate-400 peer-checked:text-rose-600 uppercase tracking-widest transition-all">
+                                {CATEGORY_LABELS[TransactionCategory.VARIABLE_EXPENSE]}
+                            </div>
+                        </label>
+                        <label className="flex-1 cursor-pointer">
+                            <input
+                                type="radio"
+                                name="category"
+                                value={TransactionCategory.FIXED_EXPENSE}
+                                className="hidden peer"
+                            />
+                            <div className="text-center py-3 rounded-xl peer-checked:bg-white peer-checked:shadow-md text-[10px] font-black text-slate-400 peer-checked:text-amber-600 uppercase tracking-widest transition-all">
+                                {CATEGORY_LABELS[TransactionCategory.FIXED_EXPENSE]}
+                            </div>
+                        </label>
+                    </div>
                 </div>
             )}
 

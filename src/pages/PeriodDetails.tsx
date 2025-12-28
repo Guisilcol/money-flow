@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { AccountingPeriod, Transaction, TransactionType, PeriodSummary } from '../types';
-import { Icons } from '../constants';
+import { AccountingPeriod, Transaction, TransactionType, TransactionCategory, PeriodSummary } from '../types';
+import { Icons, CATEGORY_LABELS } from '../constants';
 import { Modal } from '../components/Modal';
 import { StatCard } from '../components/StatCard';
 import { PageHeader } from '../components/PageHeader';
@@ -31,8 +31,8 @@ export const PeriodDetails: React.FC<PeriodDetailsProps> = ({
 
     const totalEntries = entries.reduce((acc, curr) => acc + curr.amount, 0);
     const totalExpenses = expenses.reduce((acc, curr) => acc + curr.amount, 0);
-    const fixedExpenses = expenses.filter(t => t.isFixed).reduce((acc, curr) => acc + curr.amount, 0);
-    const variableExpenses = expenses.filter(t => !t.isFixed).reduce((acc, curr) => acc + curr.amount, 0);
+    const fixedExpenses = expenses.filter(t => t.category === TransactionCategory.FIXED_EXPENSE).reduce((acc, curr) => acc + curr.amount, 0);
+    const variableExpenses = expenses.filter(t => t.category === TransactionCategory.VARIABLE_EXPENSE).reduce((acc, curr) => acc + curr.amount, 0);
 
     // Novos cálculos
     const investmentAmount = totalEntries * ((period.investmentPercentage || 0) / 100);
@@ -51,10 +51,10 @@ export const PeriodDetails: React.FC<PeriodDetailsProps> = ({
     };
   }, [transactions, period.investmentPercentage]);
 
-  const chartData = transactions.reduce((acc: { name: string; value: number; type: TransactionType }[], curr) => {
+  const chartData = transactions.reduce((acc: { name: TransactionCategory; value: number }[], curr) => {
     const found = acc.find(a => a.name === curr.category);
     if (found) found.value += curr.amount;
-    else acc.push({ name: curr.category, value: curr.amount, type: curr.type });
+    else acc.push({ name: curr.category, value: curr.amount });
     return acc;
   }, []);
 
