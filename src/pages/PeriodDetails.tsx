@@ -19,6 +19,7 @@ import { HeroSummary } from '../components/HeroSummary';
 import { MiniStatCard } from '../components/MiniStatCard';
 import { SettingsAccordion } from '../components/SettingsAccordion';
 import { UnifiedTransactionTable } from '../components/UnifiedTransactionTable';
+import { calculateDailyBudget, getRemainingDays } from '../libs/dailySpending';
 
 interface PeriodDetailsProps {
   period: AccountingPeriod;
@@ -91,8 +92,8 @@ export const PeriodDetails: React.FC<PeriodDetailsProps> = ({
         dateRange={dateRange}
       />
 
-      {/* Compact Dashboard - 3 Mini Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {/* Compact Dashboard - 4 Mini Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <MiniStatCard
           title="Entradas"
           amount={summary.totalEntries}
@@ -112,6 +113,13 @@ export const PeriodDetails: React.FC<PeriodDetailsProps> = ({
           amount={summary.variableExpenses}
           colorClass="bg-rose-50 text-rose-700"
           icon={Icons.TrendingDown}
+        />
+        <MiniStatCard
+          title="Gasto Diário recomendado"
+          amount={calculateDailyBudget(summary.currentVariableBalance, period.endDate)}
+          subtitle={`${getRemainingDays(period.endDate)} dias restantes`}
+          colorClass="bg-indigo-50 text-indigo-700"
+          icon={Icons.Calendar}
         />
       </div>
 
