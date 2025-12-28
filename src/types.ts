@@ -39,3 +39,9 @@ export interface PeriodSummary {
   projectedVariableBalance: number;
   currentVariableBalance: number;
 }
+
+// Handler types for callback functions
+export type AddTransactionHandler = (transaction: Transaction) => void;
+export type DeleteTransactionHandler = (id: string) => void;
+export type UpdatePeriodHandler = (period: AccountingPeriod) => void;
+

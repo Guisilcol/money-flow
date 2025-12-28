@@ -3,6 +3,7 @@ import { Transaction, AccountingPeriod } from './types';
 import { Sidebar } from './components/Sidebar';
 import { PeriodDetails } from './pages/PeriodDetails';
 import { WelcomePage } from './pages/WelcomePage';
+import { loadPeriods, loadTransactions, savePeriods, saveTransactions } from './libs/storage';
 
 const App: React.FC = () => {
   // --- State ---
@@ -21,24 +22,19 @@ const App: React.FC = () => {
 
   // --- Initial Data ---
   useEffect(() => {
-    try {
-      const savedPeriods = localStorage.getItem('finance_periods_v2');
-      const savedTransactions = localStorage.getItem('finance_transactions_v2');
+    const savedPeriods = loadPeriods();
+    const savedTransactions = loadTransactions();
 
-      if (savedPeriods) {
-        const parsed = JSON.parse(savedPeriods);
-        setPeriods(parsed);
-        if (parsed.length > 0 && !selectedPeriodId) setSelectedPeriodId(parsed[0].id);
-      }
-      if (savedTransactions) setTransactions(JSON.parse(savedTransactions));
-    } catch (e) {
-      console.error("Erro ao carregar dados", e);
+    setPeriods(savedPeriods);
+    if (savedPeriods.length > 0 && !selectedPeriodId) {
+      setSelectedPeriodId(savedPeriods[0].id);
     }
+    setTransactions(savedTransactions);
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('finance_periods_v2', JSON.stringify(periods));
-    localStorage.setItem('finance_transactions_v2', JSON.stringify(transactions));
+    savePeriods(periods);
+    saveTransactions(transactions);
   }, [periods, transactions]);
 
   // --- Handlers ---

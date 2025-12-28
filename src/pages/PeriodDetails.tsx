@@ -1,5 +1,14 @@
 import React, { useState, useMemo } from 'react';
-import { AccountingPeriod, Transaction, TransactionType, TransactionCategory, PeriodSummary } from '../types';
+import {
+  AccountingPeriod,
+  Transaction,
+  TransactionType,
+  TransactionCategory,
+  PeriodSummary,
+  AddTransactionHandler,
+  DeleteTransactionHandler,
+  UpdatePeriodHandler
+} from '../types';
 import { Icons, CATEGORY_LABELS } from '../constants';
 import { Modal } from '../components/Modal';
 import { StatCard } from '../components/StatCard';
@@ -10,9 +19,9 @@ import { TabbedTransactionTable } from '../components/TabbedTransactionTable';
 interface PeriodDetailsProps {
   period: AccountingPeriod;
   transactions: Transaction[];
-  onAddTransaction: (transaction: Transaction) => void;
-  onDeleteTransaction: (id: string) => void;
-  onUpdatePeriod: (period: AccountingPeriod) => void;
+  onAddTransaction: AddTransactionHandler;
+  onDeleteTransaction: DeleteTransactionHandler;
+  onUpdatePeriod: UpdatePeriodHandler;
 }
 
 export const PeriodDetails: React.FC<PeriodDetailsProps> = ({
