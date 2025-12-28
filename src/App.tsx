@@ -10,6 +10,7 @@ const App: React.FC = () => {
   const [periods, setPeriods] = useState<AccountingPeriod[]>([]);
   const [selectedPeriodId, setSelectedPeriodId] = useState<string | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // --- Derived State ---
   const selectedPeriod = useMemo(() =>
@@ -30,12 +31,14 @@ const App: React.FC = () => {
       setSelectedPeriodId(savedPeriods[0].id);
     }
     setTransactions(savedTransactions);
+    setIsInitialized(true);
   }, []);
 
   useEffect(() => {
+    if (!isInitialized) return;
     savePeriods(periods);
     saveTransactions(transactions);
-  }, [periods, transactions]);
+  }, [periods, transactions, isInitialized]);
 
   // --- Handlers ---
   const handleCreatePeriod = (newPeriod: AccountingPeriod) => {
