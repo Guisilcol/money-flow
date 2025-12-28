@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Transaction, AccountingPeriod } from './types';
+import { Transaction, AccountingPeriod, FixedExpense } from './types';
 import { Sidebar } from './components/Sidebar';
 import { PeriodDetails } from './pages/PeriodDetails';
 import { WelcomePage } from './pages/WelcomePage';
@@ -39,8 +39,13 @@ const App: React.FC = () => {
 
   // --- Handlers ---
   const handleCreatePeriod = (newPeriod: AccountingPeriod) => {
-    setPeriods(prev => [newPeriod, ...prev]);
-    setSelectedPeriodId(newPeriod.id);
+    // Ensure fixedExpenses is initialized
+    const periodWithFixedExpenses = {
+      ...newPeriod,
+      fixedExpenses: newPeriod.fixedExpenses || []
+    };
+    setPeriods(prev => [periodWithFixedExpenses, ...prev]);
+    setSelectedPeriodId(periodWithFixedExpenses.id);
   };
 
   const handleAddTransaction = (newTransaction: Transaction) => {
@@ -71,6 +76,31 @@ const App: React.FC = () => {
     }
   };
 
+  // --- Fixed Expense Handlers ---
+  const handleAddFixedExpense = (expense: FixedExpense) => {
+    setPeriods(prev => prev.map(p => {
+      if (p.id === expense.periodId) {
+        return {
+          ...p,
+          fixedExpenses: [...(p.fixedExpenses || []), expense]
+        };
+      }
+      return p;
+    }));
+  };
+
+  const handleDeleteFixedExpense = (expenseId: string) => {
+    setPeriods(prev => prev.map(p => {
+      if (p.id === selectedPeriodId) {
+        return {
+          ...p,
+          fixedExpenses: (p.fixedExpenses || []).filter(e => e.id !== expenseId)
+        };
+      }
+      return p;
+    }));
+  };
+
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-[#f8fafc] text-slate-900">
       {/* Sidebar - Periods */}
@@ -93,6 +123,8 @@ const App: React.FC = () => {
             onAddTransaction={handleAddTransaction}
             onDeleteTransaction={deleteTransaction}
             onUpdatePeriod={handleUpdatePeriod}
+            onAddFixedExpense={handleAddFixedExpense}
+            onDeleteFixedExpense={handleDeleteFixedExpense}
           />
         )}
       </main>

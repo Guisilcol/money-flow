@@ -33,7 +33,7 @@ export const TabbedTransactionTable: React.FC<TabbedTransactionTableProps> = ({
     const [filterName, setFilterName] = useState('');
     const [filterCategory, setFilterCategory] = useState<TransactionCategory | ''>('');
 
-    // Get categories for the dropdown (all 3 possible values)
+    // Get categories for the dropdown (only 2 now: VARIABLE_EXPENSE and ENTRY)
     const categories = Object.values(TransactionCategory);
 
     // Filtered and sorted transactions
@@ -201,7 +201,7 @@ export const TabbedTransactionTable: React.FC<TabbedTransactionTableProps> = ({
                         {/* Table Header */}
                         <div className="flex justify-between items-end border-b border-slate-100 pb-4">
                             <h4 className="text-xl font-black text-slate-900">
-                                Todos os Lançamentos
+                                Lançamentos (Entradas e Gastos Variáveis)
                             </h4>
                             <div className="text-xs font-black text-slate-400 uppercase tracking-widest">
                                 Saldo: <span className={`ml-1 ${total >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
@@ -229,9 +229,7 @@ export const TabbedTransactionTable: React.FC<TabbedTransactionTableProps> = ({
                                             <td className="py-5 px-3">
                                                 <span className={`text-[9px] font-black px-3 py-1.5 rounded-full uppercase tracking-tighter ${t.category === TransactionCategory.ENTRY
                                                     ? 'bg-emerald-100 text-emerald-600'
-                                                    : t.category === TransactionCategory.FIXED_EXPENSE
-                                                        ? 'bg-amber-100 text-amber-600'
-                                                        : 'bg-rose-100 text-rose-600'
+                                                    : 'bg-rose-100 text-rose-600'
                                                     }`}>
                                                     {CATEGORY_LABELS[t.category]}
                                                 </span>
@@ -256,7 +254,7 @@ export const TabbedTransactionTable: React.FC<TabbedTransactionTableProps> = ({
                                     ))}
                                     {filteredTransactions.length === 0 && (
                                         <tr>
-                                            <td colSpan={6} className="py-20 text-center text-slate-300 font-bold italic">
+                                            <td colSpan={5} className="py-20 text-center text-slate-300 font-bold italic">
                                                 {hasActiveFilters
                                                     ? 'Nenhum lançamento encontrado com os filtros aplicados.'
                                                     : 'Nenhum lançamento encontrado neste período.'}

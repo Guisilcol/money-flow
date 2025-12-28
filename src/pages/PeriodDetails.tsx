@@ -7,7 +7,10 @@ import {
   PeriodSummary,
   AddTransactionHandler,
   DeleteTransactionHandler,
-  UpdatePeriodHandler
+  UpdatePeriodHandler,
+  FixedExpense,
+  AddFixedExpenseHandler,
+  DeleteFixedExpenseHandler
 } from '../types';
 import { Icons } from '../constants';
 import { Modal } from '../components/Modal';
@@ -15,6 +18,7 @@ import { StatCard } from '../components/StatCard';
 import { PageHeader } from '../components/PageHeader';
 import { TransactionForm } from '../components/TransactionForm';
 import { TabbedTransactionTable } from '../components/TabbedTransactionTable';
+import { FixedExpenseCard } from '../components/FixedExpenseCard';
 
 interface PeriodDetailsProps {
   period: AccountingPeriod;
@@ -22,6 +26,8 @@ interface PeriodDetailsProps {
   onAddTransaction: AddTransactionHandler;
   onDeleteTransaction: DeleteTransactionHandler;
   onUpdatePeriod: UpdatePeriodHandler;
+  onAddFixedExpense: AddFixedExpenseHandler;
+  onDeleteFixedExpense: DeleteFixedExpenseHandler;
 }
 
 export const PeriodDetails: React.FC<PeriodDetailsProps> = ({
@@ -29,7 +35,9 @@ export const PeriodDetails: React.FC<PeriodDetailsProps> = ({
   transactions,
   onAddTransaction,
   onDeleteTransaction,
-  onUpdatePeriod
+  onUpdatePeriod,
+  onAddFixedExpense,
+  onDeleteFixedExpense
 }) => {
   const [isAddingTransaction, setIsAddingTransaction] = useState(false);
 
@@ -39,11 +47,13 @@ export const PeriodDetails: React.FC<PeriodDetailsProps> = ({
     const expenses = transactions.filter(t => t.type === TransactionType.EXPENSE);
 
     const totalEntries = entries.reduce((acc, curr) => acc + curr.amount, 0);
-    const totalExpenses = expenses.reduce((acc, curr) => acc + curr.amount, 0);
-    const fixedExpenses = expenses.filter(t => t.category === TransactionCategory.FIXED_EXPENSE).reduce((acc, curr) => acc + curr.amount, 0);
-    const variableExpenses = expenses.filter(t => t.category === TransactionCategory.VARIABLE_EXPENSE).reduce((acc, curr) => acc + curr.amount, 0);
+    const variableExpenses = expenses.reduce((acc, curr) => acc + curr.amount, 0);
 
-    // Novos cálculos
+    // Gastos fixos agora vêm do período, não das transações
+    const fixedExpenses = (period.fixedExpenses || []).reduce((acc, curr) => acc + curr.amount, 0);
+    const totalExpenses = variableExpenses + fixedExpenses;
+
+    // Cálculos
     const investmentAmount = totalEntries * ((period.investmentPercentage || 0) / 100);
     const projectedVariableBalance = totalEntries - investmentAmount - fixedExpenses;
     const currentVariableBalance = projectedVariableBalance - variableExpenses;
@@ -58,7 +68,7 @@ export const PeriodDetails: React.FC<PeriodDetailsProps> = ({
       projectedVariableBalance,
       currentVariableBalance
     };
-  }, [transactions, period.investmentPercentage]);
+  }, [transactions, period.investmentPercentage, period.fixedExpenses]);
 
   const chartData = transactions.reduce((acc: { name: TransactionCategory; value: number }[], curr) => {
     const found = acc.find(a => a.name === curr.category);
@@ -160,6 +170,14 @@ export const PeriodDetails: React.FC<PeriodDetailsProps> = ({
         />
       </div>
 
+      {/* Fixed Expenses Card */}
+      <FixedExpenseCard
+        periodId={period.id}
+        fixedExpenses={period.fixedExpenses || []}
+        onAddFixedExpense={onAddFixedExpense}
+        onDeleteFixedExpense={onDeleteFixedExpense}
+      />
+
       {/* Tabbed Transaction Table */}
       <TabbedTransactionTable
         transactions={transactions}
@@ -175,7 +193,6 @@ export const PeriodDetails: React.FC<PeriodDetailsProps> = ({
       >
         <TransactionForm
           periodId={period.id}
-          activeTab="variable"
           onSubmit={handleAddTransaction}
           onCancel={() => setIsAddingTransaction(false)}
         />
