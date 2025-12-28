@@ -1,15 +1,19 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Transaction, AccountingPeriod, FixedExpense, Entry } from './types';
+import { Transaction, AccountingPeriod, FixedExpense, Entry, Template, TemplateEntry, TemplateFixedExpense } from './types';
 import { Sidebar } from './components/Sidebar';
 import { PeriodDetails } from './pages/PeriodDetails';
 import { WelcomePage } from './pages/WelcomePage';
-import { loadPeriods, loadTransactions, savePeriods, saveTransactions } from './libs/storage';
+import { TemplatePage } from './pages/TemplatePage';
+import { loadPeriods, loadTransactions, savePeriods, saveTransactions, loadTemplate, saveTemplate } from './libs/storage';
+import { generateId } from './utils';
 
 const App: React.FC = () => {
   // --- State ---
   const [periods, setPeriods] = useState<AccountingPeriod[]>([]);
   const [selectedPeriodId, setSelectedPeriodId] = useState<string | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [template, setTemplate] = useState<Template>({ entries: [], fixedExpenses: [] });
+  const [isTemplateView, setIsTemplateView] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
   // --- Derived State ---
@@ -25,12 +29,14 @@ const App: React.FC = () => {
   useEffect(() => {
     const savedPeriods = loadPeriods();
     const savedTransactions = loadTransactions();
+    const savedTemplate = loadTemplate();
 
     setPeriods(savedPeriods);
     if (savedPeriods.length > 0 && !selectedPeriodId) {
       setSelectedPeriodId(savedPeriods[0].id);
     }
     setTransactions(savedTransactions);
+    setTemplate(savedTemplate);
     setIsInitialized(true);
   }, []);
 
@@ -38,18 +44,34 @@ const App: React.FC = () => {
     if (!isInitialized) return;
     savePeriods(periods);
     saveTransactions(transactions);
-  }, [periods, transactions, isInitialized]);
+    saveTemplate(template);
+  }, [periods, transactions, template, isInitialized]);
 
   // --- Handlers ---
   const handleCreatePeriod = (newPeriod: AccountingPeriod) => {
-    // Ensure fixedExpenses and entries are initialized
+    // Copy template items to the new period with new IDs
+    const templateEntries: Entry[] = template.entries.map(te => ({
+      id: generateId(),
+      periodId: newPeriod.id,
+      name: te.name,
+      amount: te.amount,
+    }));
+
+    const templateFixedExpenses: FixedExpense[] = template.fixedExpenses.map(tfe => ({
+      id: generateId(),
+      periodId: newPeriod.id,
+      name: tfe.name,
+      amount: tfe.amount,
+    }));
+
     const periodWithDefaults = {
       ...newPeriod,
-      fixedExpenses: newPeriod.fixedExpenses || [],
-      entries: newPeriod.entries || []
+      fixedExpenses: [...(newPeriod.fixedExpenses || []), ...templateFixedExpenses],
+      entries: [...(newPeriod.entries || []), ...templateEntries]
     };
     setPeriods(prev => [periodWithDefaults, ...prev]);
     setSelectedPeriodId(periodWithDefaults.id);
+    setIsTemplateView(false);
   };
 
   const handleAddTransaction = (newTransaction: Transaction) => {
@@ -165,20 +187,85 @@ const App: React.FC = () => {
     ));
   };
 
+  // --- Template Handlers ---
+  const handleAddTemplateEntry = (entry: TemplateEntry) => {
+    setTemplate(prev => ({
+      ...prev,
+      entries: [...prev.entries, entry]
+    }));
+  };
+
+  const handleUpdateTemplateEntry = (updatedEntry: TemplateEntry) => {
+    setTemplate(prev => ({
+      ...prev,
+      entries: prev.entries.map(e => e.id === updatedEntry.id ? updatedEntry : e)
+    }));
+  };
+
+  const handleDeleteTemplateEntry = (entryId: string) => {
+    setTemplate(prev => ({
+      ...prev,
+      entries: prev.entries.filter(e => e.id !== entryId)
+    }));
+  };
+
+  const handleAddTemplateFixedExpense = (expense: TemplateFixedExpense) => {
+    setTemplate(prev => ({
+      ...prev,
+      fixedExpenses: [...prev.fixedExpenses, expense]
+    }));
+  };
+
+  const handleUpdateTemplateFixedExpense = (updatedExpense: TemplateFixedExpense) => {
+    setTemplate(prev => ({
+      ...prev,
+      fixedExpenses: prev.fixedExpenses.map(e => e.id === updatedExpense.id ? updatedExpense : e)
+    }));
+  };
+
+  const handleDeleteTemplateFixedExpense = (expenseId: string) => {
+    setTemplate(prev => ({
+      ...prev,
+      fixedExpenses: prev.fixedExpenses.filter(e => e.id !== expenseId)
+    }));
+  };
+
+  const handleSelectPeriod = (id: string) => {
+    setSelectedPeriodId(id);
+    setIsTemplateView(false);
+  };
+
+  const handleOpenTemplate = () => {
+    setIsTemplateView(true);
+    setSelectedPeriodId(null);
+  };
+
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-[#f8fafc] text-slate-900">
       {/* Sidebar - Periods */}
       <Sidebar
         periods={periods}
         selectedPeriodId={selectedPeriodId}
-        onSelectPeriod={setSelectedPeriodId}
+        isTemplateView={isTemplateView}
+        onSelectPeriod={handleSelectPeriod}
         onCreatePeriod={handleCreatePeriod}
         onDeletePeriod={deletePeriod}
+        onOpenTemplate={handleOpenTemplate}
       />
 
       {/* Main Content */}
       <main className="flex-1 p-4 md:p-10 lg:p-14 overflow-y-auto">
-        {!selectedPeriod ? (
+        {isTemplateView ? (
+          <TemplatePage
+            template={template}
+            onAddEntry={handleAddTemplateEntry}
+            onUpdateEntry={handleUpdateTemplateEntry}
+            onDeleteEntry={handleDeleteTemplateEntry}
+            onAddFixedExpense={handleAddTemplateFixedExpense}
+            onUpdateFixedExpense={handleUpdateTemplateFixedExpense}
+            onDeleteFixedExpense={handleDeleteTemplateFixedExpense}
+          />
+        ) : !selectedPeriod ? (
           <WelcomePage />
         ) : (
           <PeriodDetails

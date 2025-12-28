@@ -56,6 +56,24 @@ export interface PeriodSummary {
   currentVariableBalance: number;
 }
 
+// Template types - sem periodId pois pertencem ao template global
+export interface TemplateEntry {
+  id: string;
+  name: string;
+  amount: number;
+}
+
+export interface TemplateFixedExpense {
+  id: string;
+  name: string;
+  amount: number;
+}
+
+export interface Template {
+  entries: TemplateEntry[];
+  fixedExpenses: TemplateFixedExpense[];
+}
+
 // Handler types for callback functions
 export type AddTransactionHandler = (transaction: Transaction) => void;
 export type DeleteTransactionHandler = (id: string) => void;

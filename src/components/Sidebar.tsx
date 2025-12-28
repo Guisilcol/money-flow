@@ -7,17 +7,21 @@ import { generateId, getFirstDayOfMonth, getLastDayOfMonth } from '../utils';
 interface SidebarProps {
   periods: AccountingPeriod[];
   selectedPeriodId: string | null;
+  isTemplateView: boolean;
   onSelectPeriod: (id: string) => void;
   onCreatePeriod: (period: AccountingPeriod) => void;
   onDeletePeriod: (id: string) => void;
+  onOpenTemplate: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   periods,
   selectedPeriodId,
+  isTemplateView,
   onSelectPeriod,
   onCreatePeriod,
-  onDeletePeriod
+  onDeletePeriod,
+  onOpenTemplate,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -56,6 +60,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
             className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-xl font-bold transition-all shadow-lg shadow-indigo-100 active:scale-[0.98]"
           >
             <Icons.Plus /> Novo Período
+          </button>
+          <button
+            onClick={onOpenTemplate}
+            className={`w-full mt-3 flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-all border-2 ${isTemplateView
+                ? 'bg-slate-900 text-white border-slate-900'
+                : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
+              }`}
+          >
+            <Icons.Settings /> Template Padrão
           </button>
         </div>
 

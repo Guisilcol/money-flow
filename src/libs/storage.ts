@@ -1,9 +1,10 @@
-import { AccountingPeriod, Transaction } from '../types';
+import { AccountingPeriod, Transaction, Template } from '../types';
 
 // Storage keys as constants
 const STORAGE_KEYS = {
   PERIODS: 'finance_periods_v4',
   TRANSACTIONS: 'finance_transactions_v4',
+  TEMPLATE: 'finance_template_v1',
 } as const;
 
 // Legacy keys for migration
@@ -129,4 +130,19 @@ export function savePeriods(periods: AccountingPeriod[]): void {
 
 export function saveTransactions(transactions: Transaction[]): void {
   setItem(STORAGE_KEYS.TRANSACTIONS, transactions);
+}
+
+// Template storage functions
+const DEFAULT_TEMPLATE: Template = {
+  entries: [],
+  fixedExpenses: [],
+};
+
+export function loadTemplate(): Template {
+  const template = getItem<Template>(STORAGE_KEYS.TEMPLATE);
+  return template ?? DEFAULT_TEMPLATE;
+}
+
+export function saveTemplate(template: Template): void {
+  setItem(STORAGE_KEYS.TEMPLATE, template);
 }

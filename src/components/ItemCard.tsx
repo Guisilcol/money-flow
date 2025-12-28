@@ -4,13 +4,13 @@ import { generateId } from '../utils';
 
 interface Item {
     id: string;
-    periodId: string;
+    periodId?: string;
     name: string;
     amount: number;
 }
 
 interface ItemCardProps {
-    periodId: string;
+    periodId?: string;
     items: Item[];
     onAdd: (item: Item) => void;
     onUpdate: (item: Item) => void;
