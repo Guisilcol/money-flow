@@ -77,7 +77,7 @@ export const PeriodDetails: React.FC<PeriodDetailsProps> = ({
   const getButtonLabel = () => {
     if (activeTab === 'fixed') return 'Lançar Conta Fixa';
     if (activeTab === 'entries') return 'Lançar Entrada';
-    return 'Lançar Gasto';
+    return 'Adicionar Lançamento';
   };
 
   return (
