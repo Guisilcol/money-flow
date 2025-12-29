@@ -5,7 +5,7 @@ import { PeriodDetails } from './pages/PeriodDetails';
 import { WelcomePage } from './pages/WelcomePage';
 import { TemplatePage } from './pages/TemplatePage';
 import { loadPeriods, loadTransactions, savePeriods, saveTransactions, loadTemplate, saveTemplate, exportAllData, importAllData, DatabaseExport } from './libs/storage';
-import { generateId } from './utils';
+import { generateId } from './libs/uuid';
 
 const App: React.FC = () => {
   // --- State ---

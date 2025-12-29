@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Transaction, Entry, FixedExpense } from '../types';
 import { Icons } from '../constants';
-import { generateId } from '../utils';
+import { generateId } from '../libs/uuid';
 
 // Unified item type for the table
 interface UnifiedItem {
