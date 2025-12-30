@@ -371,15 +371,6 @@ export const UnifiedTransactionTable: React.FC<UnifiedTransactionTableProps> = (
                                     autoFocus
                                 />
                             )}
-                            {(addType === 'variable' || addType === 'zero') && (
-                                <input
-                                    type="date"
-                                    value={addDate}
-                                    onChange={(e) => setAddDate(e.target.value)}
-                                    className="px-4 py-2 text-sm font-medium bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                    autoFocus={addType === 'zero'}
-                                />
-                            )}
                             {addType !== 'zero' && (
                                 <input
                                     type="number"
@@ -391,6 +382,16 @@ export const UnifiedTransactionTable: React.FC<UnifiedTransactionTableProps> = (
                                     className="w-32 px-4 py-2 text-sm font-black bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 />
                             )}
+                            {(addType === 'variable' || addType === 'zero') && (
+                                <input
+                                    type="date"
+                                    value={addDate}
+                                    onChange={(e) => setAddDate(e.target.value)}
+                                    className="px-4 py-2 text-sm font-medium bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    autoFocus={addType === 'zero'}
+                                />
+                            )}
+
                             <button
                                 type="submit"
                                 className="px-5 py-2 bg-indigo-500 hover:bg-indigo-600 text-white font-bold rounded-xl transition-all text-sm"
