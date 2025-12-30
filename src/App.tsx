@@ -1,10 +1,28 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Transaction, AccountingPeriod, FixedExpense, Entry, Template, TemplateEntry, TemplateFixedExpense } from './types';
+import {
+  Transaction,
+  AccountingPeriod,
+  FixedExpense,
+  Entry,
+  Template,
+  TemplateEntry,
+  TemplateFixedExpense
+} from './types';
 import { Sidebar } from './components/Sidebar';
 import { PeriodDetails } from './pages/PeriodDetails';
 import { WelcomePage } from './pages/WelcomePage';
 import { TemplatePage } from './pages/TemplatePage';
-import { loadPeriods, loadTransactions, savePeriods, saveTransactions, loadTemplate, saveTemplate, exportAllData, importAllData, DatabaseExport } from './libs/repositories';
+import {
+  loadPeriods,
+  loadTransactions,
+  savePeriods,
+  saveTransactions,
+  loadTemplate,
+  saveTemplate,
+  exportAllData,
+  importAllData,
+  DatabaseExport
+} from './libs/repositories';
 import { generateId } from './libs/uuid';
 
 const App: React.FC = () => {

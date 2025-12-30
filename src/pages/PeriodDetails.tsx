@@ -3,16 +3,8 @@ import {
   AccountingPeriod,
   Transaction,
   PeriodSummary,
-  AddTransactionHandler,
-  DeleteTransactionHandler,
-  UpdateTransactionHandler,
-  UpdatePeriodHandler,
-  AddFixedExpenseHandler,
-  DeleteFixedExpenseHandler,
-  UpdateFixedExpenseHandler,
-  AddEntryHandler,
-  DeleteEntryHandler,
-  UpdateEntryHandler
+  FixedExpense,
+  Entry,
 } from '../types';
 import { Icons } from '../constants';
 import { HeroSummary } from '../components/HeroSummary';
@@ -24,16 +16,16 @@ import { calculateDailyBudget, getRemainingDays } from '../libs/dailySpending';
 interface PeriodDetailsProps {
   period: AccountingPeriod;
   transactions: Transaction[];
-  onAddTransaction: AddTransactionHandler;
-  onDeleteTransaction: DeleteTransactionHandler;
-  onUpdateTransaction: UpdateTransactionHandler;
-  onUpdatePeriod: UpdatePeriodHandler;
-  onAddFixedExpense: AddFixedExpenseHandler;
-  onDeleteFixedExpense: DeleteFixedExpenseHandler;
-  onUpdateFixedExpense: UpdateFixedExpenseHandler;
-  onAddEntry: AddEntryHandler;
-  onDeleteEntry: DeleteEntryHandler;
-  onUpdateEntry: UpdateEntryHandler;
+  onAddTransaction: (transaction: Transaction) => void;
+  onDeleteTransaction: (id: string) => void;
+  onUpdateTransaction: (transaction: Transaction) => void;
+  onUpdatePeriod: (period: AccountingPeriod) => void;
+  onAddFixedExpense: (expense: FixedExpense) => void;
+  onDeleteFixedExpense: (expenseId: string) => void;
+  onUpdateFixedExpense: (expense: FixedExpense) => void;
+  onAddEntry: (entry: Entry) => void;
+  onDeleteEntry: (entryId: string) => void;
+  onUpdateEntry: (entry: Entry) => void;
 }
 
 export const PeriodDetails: React.FC<PeriodDetailsProps> = ({
