@@ -9,9 +9,9 @@ import {
   TemplateFixedExpense
 } from './types';
 import { Sidebar } from './components/Sidebar';
-import { PeriodDetails } from './pages/PeriodDetails';
-import { WelcomePage } from './pages/WelcomePage';
-import { TemplatePage } from './pages/TemplatePage';
+import { PeriodDetails } from './views/PeriodDetails';
+import { WelcomePage } from './views/WelcomePage';
+import { TemplatePage } from './views/TemplatePage';
 import {
   loadPeriods,
   loadTransactions,
