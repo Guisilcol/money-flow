@@ -9,9 +9,8 @@ services:
       - NODE_ENV=production
     networks:
       - dokploy-network
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.services.money-flow.loadbalancer.server.port=3000"
+    ports:
+      - "5000:3000"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000"]
       interval: 30s
