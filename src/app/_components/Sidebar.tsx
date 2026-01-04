@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useRef, useMemo } from 'react';
 import { AccountingPeriod } from '../_lib/types';
 import { Icons } from '../_lib/constants';
@@ -5,31 +7,30 @@ import { Modal } from './Modal';
 import { generateId } from '../_lib/uuid';
 import { getFirstDayOfMonth, getLastDayOfMonth } from '../_lib/dateHandler';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { usePeriodsContext } from '../_contexts/PeriodsContext';
 
-interface SidebarProps {
-  periods: AccountingPeriod[];
-  selectedPeriodId: string | null;
-  onSelectPeriod: (id: string) => void;
-  onCreatePeriod: (period: AccountingPeriod) => void;
-  onDeletePeriod: (id: string) => void;
-  onUpdatePeriodDates: (id: string, startDate: string, endDate: string) => void;
-  onExportData: () => void;
-  onImportData: (file: File) => void;
-}
-
-export const Sidebar: React.FC<SidebarProps> = ({
-  periods,
-  selectedPeriodId,
-  onSelectPeriod,
-  onCreatePeriod,
-  onDeletePeriod,
-  onUpdatePeriodDates,
-  onExportData,
-  onImportData,
-}) => {
+/**
+ * Sidebar component that displays navigation and period management.
+ * Consumes PeriodsContext for state and operations.
+ */
+export const Sidebar: React.FC = () => {
+  const router = useRouter();
   const pathname = usePathname();
   const isTemplateView = pathname === '/template';
+
+  // Context state and operations
+  const {
+    periods,
+    selectedPeriodId,
+    createPeriod,
+    deletePeriod,
+    updatePeriodDates,
+    exportData,
+    importData,
+  } = usePeriodsContext();
+
+  // Local UI state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingPeriod, setEditingPeriod] = useState<AccountingPeriod | null>(null);
@@ -54,7 +55,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const handleEditSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (editingPeriod && editingStartDate && editingEndDate) {
-      onUpdatePeriodDates(editingPeriod.id, editingStartDate, editingEndDate);
+      updatePeriodDates(editingPeriod.id, editingStartDate, editingEndDate);
     }
     cancelEditing();
   };
@@ -62,17 +63,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      onImportData(file);
-      // Reset input so the same file can be selected again
+      importData(file);
       e.target.value = '';
     }
   };
 
-  // Ordenar períodos do mais novo para o mais velho
+  const handleSelectPeriod = (id: string) => {
+    router.push(`/period/${id}`);
+  };
+
+  // Sort periods from newest to oldest
   const sortedPeriods = useMemo(() => {
     return [...periods].sort((a, b) => {
-      // O nome é no formato "YYYY-MM-DD - YYYY-MM-DD"
-      // Comparar pela data de início em ordem decrescente
       return b.name.localeCompare(a.name);
     });
   }, [periods]);
@@ -93,7 +95,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       entries: []
     };
 
-    onCreatePeriod(newPeriod);
+    createPeriod(newPeriod);
     setIsModalOpen(false);
   };
 
@@ -126,7 +128,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Export/Import buttons */}
           <div className="flex gap-2 mt-3">
             <button
-              onClick={onExportData}
+              onClick={exportData}
               className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-all border-2 bg-white text-emerald-600 border-emerald-200 hover:border-emerald-400 hover:bg-emerald-50"
               title="Exportar todos os dados"
             >
@@ -167,7 +169,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     }`}
                 >
                   <button
-                    onClick={() => onSelectPeriod(period.id)}
+                    onClick={() => handleSelectPeriod(period.id)}
                     className="flex-1 flex items-center gap-4 p-4 text-left min-w-0 focus:outline-none"
                   >
                     <div className={`p-2 rounded-lg shrink-0 ${isSelected ? 'bg-white/10 text-white' : 'bg-slate-50 text-slate-600'}`}>
@@ -207,7 +209,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      onDeletePeriod(period.id);
+                      deletePeriod(period.id);
                     }}
                     className={`h-full p-3 shrink-0 transition-colors cursor-pointer flex items-center justify-center ${isSelected
                       ? 'text-slate-500 hover:text-rose-400 hover:bg-white/10'
