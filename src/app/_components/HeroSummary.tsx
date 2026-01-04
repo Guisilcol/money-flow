@@ -6,12 +6,14 @@ interface HeroSummaryProps {
     summary: PeriodSummary;
     periodName: string;
     dateRange: string;
+    onEditClick?: () => void;
 }
 
 export const HeroSummary: React.FC<HeroSummaryProps> = ({
     summary,
     periodName,
-    dateRange
+    dateRange,
+    onEditClick
 }) => {
     const usagePercentage = summary.projectedVariableBalance > 0
         ? ((summary.projectedVariableBalance - summary.currentVariableBalance) / summary.projectedVariableBalance) * 100
@@ -40,9 +42,21 @@ export const HeroSummary: React.FC<HeroSummaryProps> = ({
                 <span className="text-indigo-400 font-black text-[10px] uppercase tracking-widest">
                     Período Selecionado
                 </span>
-                <h2 className="text-2xl md:text-3xl font-black tracking-tight mt-1">
-                    {periodName}
-                </h2>
+                <div className="flex items-center gap-3 mt-1">
+                    <h2 className="text-2xl md:text-3xl font-black tracking-tight">
+                        {periodName}
+                    </h2>
+                    {onEditClick && (
+                        <button
+                            onClick={onEditClick}
+                            className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-slate-400 hover:text-white transition-colors"
+                            title="Editar período"
+                            aria-label="Editar período"
+                        >
+                            <Icons.Edit />
+                        </button>
+                    )}
+                </div>
                 <div className="flex items-center gap-2 text-sm font-mono font-bold text-slate-400 mt-1">
                     <Icons.Calendar />
                     {dateRange}

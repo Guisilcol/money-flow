@@ -25,40 +25,13 @@ export const Sidebar: React.FC = () => {
     selectedPeriodId,
     createPeriod,
     deletePeriod,
-    updatePeriodDates,
     exportData,
     importData,
   } = usePeriodsContext();
 
   // Local UI state
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editingPeriod, setEditingPeriod] = useState<AccountingPeriod | null>(null);
-  const [editingStartDate, setEditingStartDate] = useState('');
-  const [editingEndDate, setEditingEndDate] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const startEditing = (period: AccountingPeriod) => {
-    setEditingPeriod(period);
-    setEditingStartDate(period.startDate);
-    setEditingEndDate(period.endDate);
-    setIsEditModalOpen(true);
-  };
-
-  const cancelEditing = () => {
-    setIsEditModalOpen(false);
-    setEditingPeriod(null);
-    setEditingStartDate('');
-    setEditingEndDate('');
-  };
-
-  const handleEditSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (editingPeriod && editingStartDate && editingEndDate) {
-      updatePeriodDates(editingPeriod.id, editingStartDate, editingEndDate);
-    }
-    cancelEditing();
-  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -183,26 +156,6 @@ export const Sidebar: React.FC = () => {
                     </div>
                   </button>
 
-                  {/* Edit button */}
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      startEditing(period);
-                    }}
-                    className={`h-full p-3 shrink-0 transition-colors cursor-pointer flex items-center justify-center ${isSelected
-                      ? 'text-slate-500 hover:text-indigo-300 hover:bg-white/10'
-                      : 'text-slate-300 hover:text-indigo-600 hover:bg-indigo-50'
-                      }`}
-                    title="Renomear período"
-                    aria-label="Renomear período"
-                  >
-                    <div className="pointer-events-none">
-                      <Icons.Edit />
-                    </div>
-                  </button>
-
                   {/* Delete button */}
                   <button
                     type="button"
@@ -271,53 +224,6 @@ export const Sidebar: React.FC = () => {
           </div>
           <button type="submit" className="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-indigo-700 shadow-xl shadow-indigo-100 transition-all active:scale-[0.98]">
             Criar Período
-          </button>
-        </form>
-      </Modal>
-
-      {/* Edit Period Modal */}
-      <Modal
-        isOpen={isEditModalOpen}
-        onClose={cancelEditing}
-        title="Editar Período"
-      >
-        <form onSubmit={handleEditSubmit} className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Início</label>
-              <div className="relative group">
-                <input
-                  type="date"
-                  required
-                  value={editingStartDate}
-                  onChange={(e) => setEditingStartDate(e.target.value)}
-                  onClick={(e) => (e.target as HTMLInputElement).showPicker?.()}
-                  className="w-full p-4 bg-slate-50 border-slate-200 border-2 rounded-2xl focus:border-indigo-500 outline-none transition-all font-bold cursor-pointer"
-                />
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none group-hover:text-indigo-500 transition-colors">
-                  <Icons.Calendar />
-                </div>
-              </div>
-            </div>
-            <div>
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Fim</label>
-              <div className="relative group">
-                <input
-                  type="date"
-                  required
-                  value={editingEndDate}
-                  onChange={(e) => setEditingEndDate(e.target.value)}
-                  onClick={(e) => (e.target as HTMLInputElement).showPicker?.()}
-                  className="w-full p-4 bg-slate-50 border-slate-200 border-2 rounded-2xl focus:border-indigo-500 outline-none transition-all font-bold cursor-pointer"
-                />
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none group-hover:text-indigo-500 transition-colors">
-                  <Icons.Calendar />
-                </div>
-              </div>
-            </div>
-          </div>
-          <button type="submit" className="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-indigo-700 shadow-xl shadow-indigo-100 transition-all active:scale-[0.98]">
-            Salvar Alterações
           </button>
         </form>
       </Modal>
