@@ -4,16 +4,16 @@ import { Icons } from '../_lib/constants';
 import { Modal } from './Modal';
 import { generateId } from '../_lib/uuid';
 import { getFirstDayOfMonth, getLastDayOfMonth } from '../_lib/dateHandler';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 interface SidebarProps {
   periods: AccountingPeriod[];
   selectedPeriodId: string | null;
-  isTemplateView: boolean;
   onSelectPeriod: (id: string) => void;
   onCreatePeriod: (period: AccountingPeriod) => void;
   onDeletePeriod: (id: string) => void;
   onRenamePeriod: (id: string, newName: string) => void;
-  onOpenTemplate: () => void;
   onExportData: () => void;
   onImportData: (file: File) => void;
 }
@@ -21,15 +21,15 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({
   periods,
   selectedPeriodId,
-  isTemplateView,
   onSelectPeriod,
   onCreatePeriod,
   onDeletePeriod,
   onRenamePeriod,
-  onOpenTemplate,
   onExportData,
   onImportData,
 }) => {
+  const pathname = usePathname();
+  const isTemplateView = pathname === '/template';
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPeriodId, setEditingPeriodId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
@@ -114,15 +114,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
           >
             <Icons.Plus /> Novo Período
           </button>
-          <button
-            onClick={onOpenTemplate}
+          <Link
+            href="/template"
             className={`w-full mt-3 flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-all border-2 ${isTemplateView
               ? 'bg-slate-900 text-white border-slate-900'
               : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
               }`}
           >
             <Icons.Settings /> Template Padrão
-          </button>
+          </Link>
 
           {/* Export/Import buttons */}
           <div className="flex gap-2 mt-3">

@@ -5,7 +5,6 @@ import { AccountingPeriod } from './_lib/types';
 import { Sidebar } from './_components/Sidebar';
 import { PeriodDetails } from './_views/PeriodDetails';
 import { WelcomePage } from './_views/WelcomePage';
-import { TemplatePage } from './_views/TemplatePage';
 import { usePeriods } from './_hooks/usePeriods';
 import { useTransactions } from './_hooks/useTransactions';
 import { useTemplate } from './_hooks/useTemplate';
@@ -34,13 +33,6 @@ export default function Home() {
     // Handler de criação usa template
     const handleCreatePeriod = (period: AccountingPeriod) => {
         periodsHook.handleCreatePeriod(period, templateHook.template);
-        templateHook.setIsTemplateView(false);
-    };
-
-    // Handler de seleção de período (fecha template view)
-    const handleSelectPeriod = (id: string) => {
-        periodsHook.handleSelectPeriod(id);
-        templateHook.setIsTemplateView(false);
     };
 
     if (!isInitialized) return null;
@@ -51,29 +43,17 @@ export default function Home() {
             <Sidebar
                 periods={periodsHook.periods}
                 selectedPeriodId={periodsHook.selectedPeriodId}
-                isTemplateView={templateHook.isTemplateView}
-                onSelectPeriod={handleSelectPeriod}
+                onSelectPeriod={periodsHook.handleSelectPeriod}
                 onCreatePeriod={handleCreatePeriod}
                 onDeletePeriod={periodsHook.deletePeriod}
                 onRenamePeriod={periodsHook.handleRenamePeriod}
-                onOpenTemplate={templateHook.handleOpenTemplate}
                 onExportData={handleExportData}
                 onImportData={handleImportData}
             />
 
             {/* Main Content */}
             <main className="flex-1 p-4 md:p-10 lg:p-14 overflow-y-auto">
-                {templateHook.isTemplateView ? (
-                    <TemplatePage
-                        template={templateHook.template}
-                        onAddEntry={templateHook.handleAddTemplateEntry}
-                        onUpdateEntry={templateHook.handleUpdateTemplateEntry}
-                        onDeleteEntry={templateHook.handleDeleteTemplateEntry}
-                        onAddFixedExpense={templateHook.handleAddTemplateFixedExpense}
-                        onUpdateFixedExpense={templateHook.handleUpdateTemplateFixedExpense}
-                        onDeleteFixedExpense={templateHook.handleDeleteTemplateFixedExpense}
-                    />
-                ) : !periodsHook.selectedPeriod ? (
+                {!periodsHook.selectedPeriod ? (
                     <WelcomePage />
                 ) : (
                     <PeriodDetails
