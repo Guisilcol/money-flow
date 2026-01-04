@@ -1,6 +1,6 @@
 import React from 'react';
-import { PeriodSummary } from '../types';
-import { Icons } from '../constants';
+import { PeriodSummary } from '../_lib/types';
+import { Icons } from '../_lib/constants';
 
 interface HeroSummaryProps {
     summary: PeriodSummary;

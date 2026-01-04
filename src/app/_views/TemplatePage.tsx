@@ -3,10 +3,10 @@ import {
     Template,
     TemplateEntry,
     TemplateFixedExpense,
-} from '../types';
-import { Icons } from '../constants';
-import { PageHeader } from '../components/PageHeader';
-import { ItemCard } from '../components/ItemCard';
+} from '../_lib/types';
+import { Icons } from '../_lib/constants';
+import { PageHeader } from '../_components/PageHeader';
+import { ItemCard } from '../_components/ItemCard';
 
 interface TemplatePageProps {
     template: Template;

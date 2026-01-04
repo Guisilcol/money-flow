@@ -1,5 +1,5 @@
 import React from 'react';
-import { Icons } from '../constants';
+import { Icons } from '../_lib/constants';
 
 export const WelcomePage: React.FC = () => (
     <div className="h-full flex flex-col items-center justify-center text-center max-w-sm mx-auto space-y-6">

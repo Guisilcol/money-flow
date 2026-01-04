@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Template, TemplateEntry, TemplateFixedExpense } from '../types';
+import { Template, TemplateEntry, TemplateFixedExpense } from '../_lib/types';
 
 interface UseTemplateReturn {
   template: Template;

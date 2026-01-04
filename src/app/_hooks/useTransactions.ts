@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Transaction } from '../types';
+import { Transaction } from '../_lib/types';
 
 interface UseTransactionsReturn {
   transactions: Transaction[];

@@ -1,4 +1,4 @@
-import { Template } from '../../types';
+import { Template } from '../types';
 import { getItem, setItem } from '../indexedDB';
 
 const TEMPLATE_STORAGE_KEY = 'finance_template_v1';

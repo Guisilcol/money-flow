@@ -1,4 +1,4 @@
-import { Transaction } from '../../types';
+import { Transaction } from '../types';
 import { getItem, setItem } from '../indexedDB';
 
 const TRANSACTIONS_STORAGE_KEY = 'finance_transactions_v4';

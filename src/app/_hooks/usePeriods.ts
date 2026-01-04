@@ -4,8 +4,8 @@ import {
   FixedExpense,
   Entry,
   Template,
-} from '../types';
-import { generateId } from '../libs/uuid';
+} from '../_lib/types';
+import { generateId } from '../_lib/uuid';
 
 interface UsePeriodsReturn {
   // Estado

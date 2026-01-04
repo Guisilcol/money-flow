@@ -1,4 +1,4 @@
-import { Transaction } from '../types';
+import { Transaction } from './types';
 
 /**
  * Retorna as datas que têm qualquer transação (dia "usado/fechado")

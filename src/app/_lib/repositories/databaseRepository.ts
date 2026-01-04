@@ -1,4 +1,4 @@
-import { AccountingPeriod, Transaction, Template } from '../../types';
+import { AccountingPeriod, Transaction, Template } from '../types';
 import { loadPeriods, savePeriods } from './periodsRepository';
 import { loadTransactions, saveTransactions } from './transactionsRepository';
 import { loadTemplate, saveTemplate } from './templateRepository';

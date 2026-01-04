@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Icons } from '../constants';
+import { Icons } from '../_lib/constants';
 
 interface SettingsAccordionProps {
     investmentPercentage: number;

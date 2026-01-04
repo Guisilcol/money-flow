@@ -3,7 +3,7 @@ import {
   AccountingPeriod,
   Transaction,
   Template,
-} from '../types';
+} from '../_lib/types';
 import {
   loadPeriods,
   loadTransactions,
@@ -14,7 +14,7 @@ import {
   exportAllData,
   importAllData,
   DatabaseExport,
-} from '../libs/repositories';
+} from '../_lib/repositories';
 
 interface UseDataPersistenceParams {
   periods: {

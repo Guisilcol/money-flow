@@ -1,4 +1,4 @@
-import { AccountingPeriod } from '../../types';
+import { AccountingPeriod } from '../types';
 import { getItem, setItem } from '../indexedDB';
 
 const PERIODS_STORAGE_KEY = 'finance_periods_v4';

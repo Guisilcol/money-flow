@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Icons } from '../constants';
-import { generateId } from '../libs/uuid';
+import { Icons } from '../_lib/constants';
+import { generateId } from '../_lib/uuid';
 
 interface Item {
     id: string;

@@ -1,9 +1,9 @@
 import React, { useState, useRef, useMemo } from 'react';
-import { AccountingPeriod } from '../types';
-import { Icons } from '../constants';
+import { AccountingPeriod } from '../_lib/types';
+import { Icons } from '../_lib/constants';
 import { Modal } from './Modal';
-import { generateId } from '../libs/uuid';
-import { getFirstDayOfMonth, getLastDayOfMonth } from '../libs/dateHandler';
+import { generateId } from '../_lib/uuid';
+import { getFirstDayOfMonth, getLastDayOfMonth } from '../_lib/dateHandler';
 
 interface SidebarProps {
   periods: AccountingPeriod[];

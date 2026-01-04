@@ -5,13 +5,13 @@ import {
   PeriodSummary,
   FixedExpense,
   Entry,
-} from '../types';
-import { Icons } from '../constants';
-import { HeroSummary } from '../components/HeroSummary';
-import { MiniStatCard } from '../components/MiniStatCard';
-import { SettingsAccordion } from '../components/SettingsAccordion';
-import { UnifiedTransactionTable } from '../components/UnifiedTransactionTable';
-import { calculateDailyBudget, getRemainingDays } from '../libs/dailySpending';
+} from '../_lib/types';
+import { Icons } from '../_lib/constants';
+import { HeroSummary } from '../_components/HeroSummary';
+import { MiniStatCard } from '../_components/MiniStatCard';
+import { SettingsAccordion } from '../_components/SettingsAccordion';
+import { UnifiedTransactionTable } from '../_components/UnifiedTransactionTable';
+import { calculateDailyBudget, getRemainingDays } from '../_lib/dailySpending';
 
 interface PeriodDetailsProps {
   period: AccountingPeriod;
