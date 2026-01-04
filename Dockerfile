@@ -37,8 +37,6 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 RUN mkdir -p /moneyflow && chown -R nextjs:nodejs /moneyflow
 VOLUME ["/moneyflow"]
 
-EXPOSE 3000
-
 USER nextjs
 
 CMD ["bun", "server.js"]
