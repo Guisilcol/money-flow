@@ -33,6 +33,8 @@ RUN groupadd --system --gid 1001 nodejs && \
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
+EXPOSE 3000
+
 USER nextjs
 
 CMD ["bun", "server.js"]
