@@ -109,10 +109,15 @@ export function AppLayout({ children }: AppLayoutProps) {
         }
     };
 
-    const handleRenamePeriod = (id: string, newName: string) => {
-        setPeriods(prev => prev.map(p =>
-            p.id === id ? { ...p, name: newName } : p
-        ));
+    const handleUpdatePeriodDates = async (id: string, startDate: string, endDate: string) => {
+        const newName = `${startDate} - ${endDate}`;
+        const updatedPeriods = periods.map(p =>
+            p.id === id ? { ...p, name: newName, startDate, endDate } : p
+        );
+        setPeriods(updatedPeriods);
+        // Save immediately and reload to sync PeriodPage state
+        await savePeriods(updatedPeriods);
+        window.location.reload();
     };
 
     const handleExportData = useCallback(async () => {
@@ -177,7 +182,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                 onSelectPeriod={handleSelectPeriod}
                 onCreatePeriod={handleCreatePeriod}
                 onDeletePeriod={handleDeletePeriod}
-                onRenamePeriod={handleRenamePeriod}
+                onUpdatePeriodDates={handleUpdatePeriodDates}
                 onExportData={handleExportData}
                 onImportData={handleImportData}
             />

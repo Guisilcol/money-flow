@@ -13,7 +13,7 @@ interface SidebarProps {
   onSelectPeriod: (id: string) => void;
   onCreatePeriod: (period: AccountingPeriod) => void;
   onDeletePeriod: (id: string) => void;
-  onRenamePeriod: (id: string, newName: string) => void;
+  onUpdatePeriodDates: (id: string, startDate: string, endDate: string) => void;
   onExportData: () => void;
   onImportData: (file: File) => void;
 }
@@ -24,40 +24,39 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onSelectPeriod,
   onCreatePeriod,
   onDeletePeriod,
-  onRenamePeriod,
+  onUpdatePeriodDates,
   onExportData,
   onImportData,
 }) => {
   const pathname = usePathname();
   const isTemplateView = pathname === '/template';
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingPeriodId, setEditingPeriodId] = useState<string | null>(null);
-  const [editingName, setEditingName] = useState('');
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingPeriod, setEditingPeriod] = useState<AccountingPeriod | null>(null);
+  const [editingStartDate, setEditingStartDate] = useState('');
+  const [editingEndDate, setEditingEndDate] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const startEditing = (period: AccountingPeriod) => {
-    setEditingPeriodId(period.id);
-    setEditingName(period.name);
+    setEditingPeriod(period);
+    setEditingStartDate(period.startDate);
+    setEditingEndDate(period.endDate);
+    setIsEditModalOpen(true);
   };
 
   const cancelEditing = () => {
-    setEditingPeriodId(null);
-    setEditingName('');
+    setIsEditModalOpen(false);
+    setEditingPeriod(null);
+    setEditingStartDate('');
+    setEditingEndDate('');
   };
 
-  const saveEditing = () => {
-    if (editingPeriodId && editingName.trim()) {
-      onRenamePeriod(editingPeriodId, editingName.trim());
+  const handleEditSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (editingPeriod && editingStartDate && editingEndDate) {
+      onUpdatePeriodDates(editingPeriod.id, editingStartDate, editingEndDate);
     }
     cancelEditing();
-  };
-
-  const handleEditKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      saveEditing();
-    } else if (e.key === 'Escape') {
-      cancelEditing();
-    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -159,7 +158,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           ) : (
             sortedPeriods.map(period => {
               const isSelected = selectedPeriodId === period.id;
-              const isEditing = editingPeriodId === period.id;
               return (
                 <div
                   key={period.id}
@@ -176,23 +174,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       <Icons.Calendar />
                     </div>
                     <div className="overflow-hidden flex-1">
-                      {isEditing ? (
-                        <input
-                          type="text"
-                          value={editingName}
-                          onChange={(e) => setEditingName(e.target.value)}
-                          onKeyDown={handleEditKeyDown}
-                          onBlur={saveEditing}
-                          onClick={(e) => e.stopPropagation()}
-                          autoFocus
-                          className={`w-full font-bold text-sm bg-transparent border-b-2 outline-none ${isSelected
-                            ? 'text-white border-white/50 focus:border-white'
-                            : 'text-slate-900 border-indigo-300 focus:border-indigo-500'
-                            }`}
-                        />
-                      ) : (
-                        <div className={`font-bold truncate text-sm ${isSelected ? 'text-white' : 'text-slate-900'}`}>{period.name}</div>
-                      )}
+                      <div className={`font-bold truncate text-sm ${isSelected ? 'text-white' : 'text-slate-900'}`}>{period.name}</div>
                       <div className={`text-[10px] font-mono font-medium ${isSelected ? 'text-slate-400' : 'text-slate-400'}`}>
                         {period.startDate.split('-').reverse().slice(0, 2).join('/')} — {period.endDate.split('-').reverse().slice(0, 2).join('/')}
                       </div>
@@ -287,6 +269,53 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
           <button type="submit" className="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-indigo-700 shadow-xl shadow-indigo-100 transition-all active:scale-[0.98]">
             Criar Período
+          </button>
+        </form>
+      </Modal>
+
+      {/* Edit Period Modal */}
+      <Modal
+        isOpen={isEditModalOpen}
+        onClose={cancelEditing}
+        title="Editar Período"
+      >
+        <form onSubmit={handleEditSubmit} className="space-y-6">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Início</label>
+              <div className="relative group">
+                <input
+                  type="date"
+                  required
+                  value={editingStartDate}
+                  onChange={(e) => setEditingStartDate(e.target.value)}
+                  onClick={(e) => (e.target as HTMLInputElement).showPicker?.()}
+                  className="w-full p-4 bg-slate-50 border-slate-200 border-2 rounded-2xl focus:border-indigo-500 outline-none transition-all font-bold cursor-pointer"
+                />
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none group-hover:text-indigo-500 transition-colors">
+                  <Icons.Calendar />
+                </div>
+              </div>
+            </div>
+            <div>
+              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Fim</label>
+              <div className="relative group">
+                <input
+                  type="date"
+                  required
+                  value={editingEndDate}
+                  onChange={(e) => setEditingEndDate(e.target.value)}
+                  onClick={(e) => (e.target as HTMLInputElement).showPicker?.()}
+                  className="w-full p-4 bg-slate-50 border-slate-200 border-2 rounded-2xl focus:border-indigo-500 outline-none transition-all font-bold cursor-pointer"
+                />
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none group-hover:text-indigo-500 transition-colors">
+                  <Icons.Calendar />
+                </div>
+              </div>
+            </div>
+          </div>
+          <button type="submit" className="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-indigo-700 shadow-xl shadow-indigo-100 transition-all active:scale-[0.98]">
+            Salvar Alterações
           </button>
         </form>
       </Modal>
