@@ -11,7 +11,7 @@ export default function Home() {
                     <Icons.Wallet />
                 </div>
                 <h1 className="text-3xl font-black text-slate-900 mb-4">
-                    Bem-vindo ao MoneyFlow
+                    Bem-vindo ao MoneyFlow!
                 </h1>
                 <p className="text-slate-500 text-lg mb-8">
                     Gerencie suas finanças de forma simples e eficiente.
