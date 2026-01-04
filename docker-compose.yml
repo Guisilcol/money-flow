@@ -2,6 +2,6 @@ services:
   app:
     build: .
     ports:
-      - "3000:3000"
+      - "3001:3000"
     volumes:
       - ./data/moneyflow:/moneyflow
