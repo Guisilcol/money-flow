@@ -5,8 +5,6 @@ services:
       dockerfile: Dockerfile
     container_name: money-flow
     restart: unless-stopped
-    ports:
-      - "3001:3000"
     environment:
       - NODE_ENV=production
     networks:
