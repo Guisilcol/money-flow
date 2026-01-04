@@ -17,23 +17,6 @@ export default function Home() {
                     Gerencie suas finanças de forma simples e eficiente.
                     Crie um novo período para começar ou selecione um existente no menu lateral.
                 </p>
-                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6">
-                    <h3 className="font-bold text-slate-700 mb-2">Como começar?</h3>
-                    <ul className="text-left text-sm text-slate-500 space-y-2">
-                        <li className="flex items-start gap-2">
-                            <span className="text-indigo-500 mt-0.5">•</span>
-                            Clique em <strong>"Novo Período"</strong> no menu lateral para criar um período contábil
-                        </li>
-                        <li className="flex items-start gap-2">
-                            <span className="text-indigo-500 mt-0.5">•</span>
-                            Configure o <strong>"Template Padrão"</strong> para automatizar entradas recorrentes
-                        </li>
-                        <li className="flex items-start gap-2">
-                            <span className="text-indigo-500 mt-0.5">•</span>
-                            Use <strong>"Importar"</strong> para carregar dados de um backup anterior
-                        </li>
-                    </ul>
-                </div>
             </div>
         </main>
     );
