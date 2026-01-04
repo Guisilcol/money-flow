@@ -1,75 +1,21 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
-import { Template, TemplateEntry, TemplateFixedExpense } from '../_lib/types';
 import { Icons } from '../_lib/constants';
+import { useTemplate } from '../_lib/hooks/useTemplate';
 import { PageHeader } from '../_components/PageHeader';
 import { ItemCard } from '../_components/ItemCard';
-import { loadTemplate, saveTemplate } from '../_lib/repositories';
 
 export default function TemplatePage() {
-    const [template, setTemplate] = useState<Template>({ entries: [], fixedExpenses: [] });
-    const [isLoaded, setIsLoaded] = useState(false);
-
-    // Carregar template do IndexedDB
-    useEffect(() => {
-        const load = async () => {
-            const savedTemplate = await loadTemplate();
-            setTemplate(savedTemplate);
-            setIsLoaded(true);
-        };
-        load();
-    }, []);
-
-    // Salvar template ao alterar
-    useEffect(() => {
-        if (!isLoaded) return;
-        saveTemplate(template);
-    }, [template, isLoaded]);
-
-    // Handlers para entradas
-    const handleAddEntry = (entry: TemplateEntry) => {
-        setTemplate(prev => ({
-            ...prev,
-            entries: [...prev.entries, entry]
-        }));
-    };
-
-    const handleUpdateEntry = (updatedEntry: TemplateEntry) => {
-        setTemplate(prev => ({
-            ...prev,
-            entries: prev.entries.map(e => e.id === updatedEntry.id ? updatedEntry : e)
-        }));
-    };
-
-    const handleDeleteEntry = (entryId: string) => {
-        setTemplate(prev => ({
-            ...prev,
-            entries: prev.entries.filter(e => e.id !== entryId)
-        }));
-    };
-
-    // Handlers para gastos fixos
-    const handleAddFixedExpense = (expense: TemplateFixedExpense) => {
-        setTemplate(prev => ({
-            ...prev,
-            fixedExpenses: [...prev.fixedExpenses, expense]
-        }));
-    };
-
-    const handleUpdateFixedExpense = (updatedExpense: TemplateFixedExpense) => {
-        setTemplate(prev => ({
-            ...prev,
-            fixedExpenses: prev.fixedExpenses.map(e => e.id === updatedExpense.id ? updatedExpense : e)
-        }));
-    };
-
-    const handleDeleteFixedExpense = (expenseId: string) => {
-        setTemplate(prev => ({
-            ...prev,
-            fixedExpenses: prev.fixedExpenses.filter(e => e.id !== expenseId)
-        }));
-    };
+    const {
+        template,
+        isLoaded,
+        addEntry,
+        updateEntry,
+        deleteEntry,
+        addFixedExpense,
+        updateFixedExpense,
+        deleteFixedExpense,
+    } = useTemplate();
 
     if (!isLoaded) return null;
 
@@ -104,9 +50,9 @@ export default function TemplatePage() {
                 {/* Template Entries */}
                 <ItemCard
                     items={template.entries}
-                    onAdd={handleAddEntry}
-                    onUpdate={handleUpdateEntry}
-                    onDelete={handleDeleteEntry}
+                    onAdd={addEntry}
+                    onUpdate={updateEntry}
+                    onDelete={deleteEntry}
                     title="Entradas Padrão"
                     subtitle="Receitas automáticas para novos períodos"
                     themeColor="emerald"
@@ -120,9 +66,9 @@ export default function TemplatePage() {
                 {/* Template Fixed Expenses */}
                 <ItemCard
                     items={template.fixedExpenses}
-                    onAdd={handleAddFixedExpense}
-                    onUpdate={handleUpdateFixedExpense}
-                    onDelete={handleDeleteFixedExpense}
+                    onAdd={addFixedExpense}
+                    onUpdate={updateFixedExpense}
+                    onDelete={deleteFixedExpense}
                     title="Gastos Fixos Padrão"
                     subtitle="Despesas automáticas para novos períodos"
                     themeColor="amber"
