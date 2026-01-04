@@ -6,7 +6,6 @@ import { Icons } from '../_lib/constants';
 import { PageHeader } from '../_components/PageHeader';
 import { ItemCard } from '../_components/ItemCard';
 import { loadTemplate, saveTemplate } from '../_lib/repositories';
-import Link from 'next/link';
 
 export default function TemplatePage() {
     const [template, setTemplate] = useState<Template>({ entries: [], fixedExpenses: [] });
@@ -75,17 +74,8 @@ export default function TemplatePage() {
     if (!isLoaded) return null;
 
     return (
-        <div className="min-h-screen bg-[#f8fafc] text-slate-900">
-            <div className="max-w-5xl mx-auto p-4 md:p-10 lg:p-14 space-y-10">
-                {/* Back Navigation */}
-                <Link
-                    href="/"
-                    className="inline-flex items-center gap-2 text-slate-500 hover:text-indigo-600 transition-colors font-medium"
-                >
-                    <Icons.ChevronLeft />
-                    <span>Voltar</span>
-                </Link>
-
+        <main className="flex-1 p-4 md:p-10 lg:p-14 overflow-y-auto">
+            <div className="max-w-5xl mx-auto space-y-10">
                 {/* Header */}
                 <PageHeader
                     label="Configuração"
@@ -142,6 +132,7 @@ export default function TemplatePage() {
                     emptyMessage="Nenhum gasto fixo padrão cadastrado"
                 />
             </div>
-        </div>
+        </main>
     );
 }
+

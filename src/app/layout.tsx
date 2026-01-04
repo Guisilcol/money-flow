@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { AppLayout } from "./_components/AppLayout";
 
 export const metadata: Metadata = {
     title: "MoneyFlow - Gestão por Períodos",
@@ -13,7 +14,10 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="pt-BR">
-            <body>{children}</body>
+            <body>
+                <AppLayout>{children}</AppLayout>
+            </body>
         </html>
     );
 }
+

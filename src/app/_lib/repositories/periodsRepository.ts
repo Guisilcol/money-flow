@@ -11,3 +11,8 @@ export async function loadPeriods(): Promise<AccountingPeriod[]> {
 export async function savePeriods(periods: AccountingPeriod[]): Promise<void> {
   await setItem(PERIODS_STORAGE_KEY, periods);
 }
+
+export async function loadPeriodById(id: string): Promise<AccountingPeriod | null> {
+  const periods = await loadPeriods();
+  return periods.find(p => p.id === id) ?? null;
+}
