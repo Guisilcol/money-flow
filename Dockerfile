@@ -25,13 +25,17 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Create a non-root user for security
+# Cria usuário não-root para segurança
 RUN groupadd --system --gid 1001 nodejs && \
     useradd --system --uid 1001 --gid nodejs nextjs
 
-# Copy necessary files from builder
+# Copia arquivos necessários do builder
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# Cria diretório de dados para persistência do SQLite
+RUN mkdir -p /moneyflow && chown -R nextjs:nodejs /moneyflow
+VOLUME ["/moneyflow"]
 
 EXPOSE 3000
 
