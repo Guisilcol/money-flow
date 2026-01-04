@@ -1,5 +1,3 @@
-export const getTodayStr = () => new Date().toISOString().split('T')[0];
-
 export const getFirstDayOfMonth = () => {
   const date = new Date();
   return new Date(date.getFullYear(), date.getMonth(), 1).toISOString().split('T')[0];

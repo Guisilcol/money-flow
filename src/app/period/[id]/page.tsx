@@ -10,13 +10,7 @@ import { MiniStatCard } from '../../_components/MiniStatCard';
 import { SettingsAccordion } from '../../_components/SettingsAccordion';
 import { UnifiedTransactionTable } from '../../_components/UnifiedTransactionTable';
 import { calculateDailyBudget, getRemainingDays } from '../../_lib/dailySpending';
-import {
-    AccountingPeriod as Period,
-    Transaction as Trans,
-    PeriodSummary,
-    FixedExpense,
-    Entry,
-} from '../../_lib/types';
+import { PeriodSummary, FixedExpense, Entry } from '../../_lib/types';
 
 // Error states
 type ErrorState = 'none' | 'no-id' | 'not-found';

@@ -132,30 +132,3 @@ export async function setItem<T>(key: string, value: T): Promise<void> {
     console.error(`Error saving item to IndexedDB (${key}):`, error);
   }
 }
-
-/**
- * Deletes an item from IndexedDB by key.
- */
-export async function deleteItem(key: string): Promise<void> {
-  try {
-    const db = await openDatabase();
-    
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction(STORES.DATA, 'readwrite');
-      const store = transaction.objectStore(STORES.DATA);
-      const request = store.delete(key);
-
-      request.onerror = () => {
-        console.error(`Error deleting item from IndexedDB (${key}):`, request.error);
-        reject(request.error);
-      };
-
-      request.onsuccess = () => {
-        resolve();
-      };
-    });
-  } catch (error) {
-    console.error(`Error deleting item from IndexedDB (${key}):`, error);
-  }
-}
-
